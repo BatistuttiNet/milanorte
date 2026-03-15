@@ -1,0 +1,16 @@
+<%- include('../partials/header') %>
+
+<div class="login-box">
+  <h2>Admin Milanorte</h2>
+  <% if (error) { %>
+    <div class="error-msg"><%= error %></div>
+  <% } %>
+  <form action="/admin/login" method="POST">
+    <div class="form-group">
+      <input type="password" name="password" placeholder="Contraseña" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Entrar</button>
+  </form>
+</div>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,14 @@
+<%- include('partials/header') %>
+
+<div class="result-page">
+  <div class="icon" style="color: var(--gold);">&#9203;</div>
+  <h1 style="color: var(--gold-dark);">Pago pendiente</h1>
+  <% if (orderId) { %>
+    <p class="order-id">Pedido #<%= orderId %></p>
+  <% } %>
+  <p>Tu pago está siendo procesado. Te notificaremos cuando se confirme.</p>
+  <p style="margin-top: 1rem; font-size: 0.95rem; color: var(--gray-light);">Esto puede demorar unos minutos.</p>
+  <a href="/" class="back-link">← Volver al inicio</a>
+</div>
+
+<%- include('partials/footer') %>

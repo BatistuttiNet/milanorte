@@ -1,0 +1,16 @@
+<%- include('partials/header') %>
+
+<div class="result-page">
+  <div class="icon" style="color: var(--red);">&#10007;</div>
+  <h1 style="color: var(--red);">El pago no se pudo procesar</h1>
+  <% if (orderId) { %>
+    <p class="order-id">Pedido #<%= orderId %></p>
+  <% } %>
+  <p>Hubo un problema con el pago. Podés intentar de nuevo.</p>
+  <% if (orderId) { %>
+    <a href="/payment/create/<%= orderId %>" class="btn btn-mp" style="margin-top: 1.5rem;">Reintentar pago</a>
+  <% } %>
+  <a href="/" class="back-link">← Volver al inicio</a>
+</div>
+
+<%- include('partials/footer') %>

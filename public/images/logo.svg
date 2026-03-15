@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" width="400" height="120">
+  <!-- "milanorte" text -->
+  <text x="200" y="72" text-anchor="middle" font-family="'Playfair Display', 'Georgia', serif" font-weight="700" font-size="62" fill="#1A1A1A" letter-spacing="-1">milanorte</text>
+  <!-- 4-point star above the 'r' -->
+  <path d="M 283 8 L 286 22 L 296 28 L 286 34 L 283 48 L 280 34 L 270 28 L 280 22 Z" fill="#1A1A1A"/>
+  <!-- "milanesas" subtitle -->
+  <text x="200" y="100" text-anchor="middle" font-family="'Inter', 'Helvetica Neue', sans-serif" font-weight="400" font-size="20" fill="#1A1A1A" letter-spacing="3">milanesas</text>
+</svg>

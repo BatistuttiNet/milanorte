@@ -1,0 +1,120 @@
+<%- include('../partials/header') %>
+
+<div class="container">
+  <a href="/admin" style="color: var(--gold-dark); text-decoration: none; font-weight: 500;">&#8592; Volver a pedidos</a>
+
+  <div class="order-detail" style="margin-top: 1rem;">
+    <h2>Pedido #<%= order.id %> <span class="status-badge status-<%= order.status %>"><%= order.status %></span></h2>
+
+    <div class="detail-grid">
+      <div class="detail-item">
+        <label>Cliente</label>
+        <span><%= order.customer_name %></span>
+      </div>
+      <div class="detail-item">
+        <label>Teléfono</label>
+        <span><%= order.customer_phone %></span>
+      </div>
+      <div class="detail-item">
+        <label>Email</label>
+        <span><%= order.customer_email || '-' %></span>
+      </div>
+      <div class="detail-item" style="grid-column: 1 / -1;">
+        <label>Dirección</label>
+        <span><%= order.customer_address %></span>
+        <% if (order.customer_lat && order.customer_lng) { %>
+          <div id="admin-map" style="height: 250px; border-radius: 6px; margin-top: 0.5rem;"></div>
+        <% } %>
+      </div>
+      <div class="detail-item">
+        <label>Día de entrega</label>
+        <span><%= order.delivery_day === 'miercoles' ? 'Miércoles' : 'Sábado' %><% if (order.delivery_slot) { %> — <%= order.delivery_slot === 'manana' ? 'Mañana (10-13)' : order.delivery_slot === 'tarde' ? 'Tarde (13-18)' : 'Noche (18-20)' %><% } %></span>
+      </div>
+      <div class="detail-item">
+        <label>Envío</label>
+        <span><% if (order.shipping_cost > 0) { %><%= order.shipping_distance_km ? Math.round(order.shipping_distance_km) + ' km — ' : '' %>$<%= order.shipping_cost %><% } else { %>-<% } %></span>
+      </div>
+      <div class="detail-item">
+        <label>Fecha pedido</label>
+        <span><%= order.created_at %></span>
+      </div>
+    </div>
+
+    <table class="checkout-table">
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Cantidad</th>
+          <th>Precio unit.</th>
+          <th>Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% items.forEach(item => { %>
+          <tr>
+            <td><%= item.product %></td>
+            <td><%= item.quantity %></td>
+            <td>$<%= item.unit_price %></td>
+            <td>$<%= item.quantity * item.unit_price %></td>
+          </tr>
+        <% }) %>
+        <% if (order.shipping_cost > 0) { %>
+          <tr>
+            <td>Envío (<%= order.shipping_distance_km ? Math.round(order.shipping_distance_km) + ' km' : '' %>)</td>
+            <td></td>
+            <td></td>
+            <td>$<%= order.shipping_cost %></td>
+          </tr>
+        <% } %>
+        <tr class="total-row">
+          <td colspan="3">Total</td>
+          <td>$<%= order.total_amount %></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <% if (order.mp_payment_id || order.mp_preference_id) { %>
+      <div style="background: var(--cream); padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+        <label style="font-size: 0.8rem; text-transform: uppercase; color: var(--gray);">MercadoPago</label>
+        <% if (order.mp_payment_id) { %><p>Payment ID: <%= order.mp_payment_id %></p><% } %>
+        <% if (order.mp_status) { %><p>Estado MP: <%= order.mp_status %></p><% } %>
+        <% if (order.mp_preference_id) { %><p>Preference: <%= order.mp_preference_id %></p><% } %>
+      </div>
+    <% } %>
+
+    <form action="/admin/orders/<%= order.id %>/status" method="POST" class="status-form">
+      <label style="font-weight: 600;">Cambiar estado:</label>
+      <select name="status">
+        <option value="pending" <%= order.status === 'pending' ? 'selected' : '' %>>Pendiente</option>
+        <option value="paid" <%= order.status === 'paid' ? 'selected' : '' %>>Pagado</option>
+        <option value="preparing" <%= order.status === 'preparing' ? 'selected' : '' %>>Preparando</option>
+        <option value="ready" <%= order.status === 'ready' ? 'selected' : '' %>>Listo</option>
+        <option value="delivered" <%= order.status === 'delivered' ? 'selected' : '' %>>Entregado</option>
+        <option value="cancelled" <%= order.status === 'cancelled' ? 'selected' : '' %>>Cancelado</option>
+      </select>
+      <button type="submit" class="btn btn-secondary btn-small">Guardar</button>
+    </form>
+  </div>
+</div>
+
+<% if (order.customer_lat && order.customer_lng && typeof googleMapsApiKey !== 'undefined' && googleMapsApiKey) { %>
+<script>
+  function initAdminMap() {
+    const lat = <%= order.customer_lat %>;
+    const lng = <%= order.customer_lng %>;
+    const map = new google.maps.Map(document.getElementById('admin-map'), {
+      zoom: 15,
+      center: { lat, lng }
+    });
+    new google.maps.Marker({ map, position: { lat, lng }, title: '<%= order.customer_address.replace(/'/g, "\\'") %>' });
+  }
+  if (typeof google !== 'undefined' && google.maps) {
+    initAdminMap();
+  } else {
+    window._gmCallbacks = window._gmCallbacks || [];
+    window._gmCallbacks.push(initAdminMap);
+  }
+</script>
+<% } %>
+
+<%- include('../partials/footer') %>

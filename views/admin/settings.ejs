@@ -1,0 +1,48 @@
+<%- include('../partials/header') %>
+
+<div class="container">
+  <div class="admin-header">
+    <h2>Configuración</h2>
+    <div class="admin-filters">
+      <a href="/admin">Pedidos</a>
+      <a href="/admin/settings" class="active">Configuración</a>
+    </div>
+    <a href="/admin/logout" class="btn btn-small btn-secondary">Salir</a>
+  </div>
+
+  <% if (saved) { %>
+    <div class="success-msg">Configuración guardada correctamente</div>
+  <% } %>
+
+  <div class="order-section">
+    <form action="/admin/settings" method="POST">
+      <h3 style="margin-bottom: 1.5rem;">Precios por kilo</h3>
+
+      <div class="form-group">
+        <label for="price_nalga">Milanesas de Nalga ($/kg)</label>
+        <input type="number" id="price_nalga" name="price_nalga" value="<%= settings.price_nalga || 20000 %>" min="0" step="100" required>
+      </div>
+
+      <div class="form-group">
+        <label for="price_bife_chorizo">Milanesas de Bife de Chorizo ($/kg)</label>
+        <input type="number" id="price_bife_chorizo" name="price_bife_chorizo" value="<%= settings.price_bife_chorizo || 35000 %>" min="0" step="100" required>
+      </div>
+
+      <h3 style="margin-top: 2rem; margin-bottom: 1.5rem;">Envío</h3>
+
+      <div class="form-group">
+        <label for="shipping_rate_per_km">Tarifa de envío ($/km)</label>
+        <input type="number" id="shipping_rate_per_km" name="shipping_rate_per_km" value="<%= settings.shipping_rate_per_km || 250 %>" min="0" step="10" required>
+      </div>
+
+      <div class="form-group">
+        <label for="free_shipping_threshold">Envío gratis a partir de ($)</label>
+        <input type="number" id="free_shipping_threshold" name="free_shipping_threshold" value="<%= settings.free_shipping_threshold || 150000 %>" min="0" step="1000" required>
+      </div>
+
+      <button type="submit" class="btn btn-primary">Guardar configuración</button>
+    </form>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
