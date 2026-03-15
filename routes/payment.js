@@ -15,33 +15,39 @@ router.get('/create/:orderId', async (req, res) => {
     const items = JSON.parse(order.items_json);
     const baseUrl = process.env.BASE_URL;
 
+    const isLocalhost = baseUrl.includes('localhost') || baseUrl.includes('127.0.0.1');
+
+    const preferenceBody = {
+      items: [
+        ...items.map(item => ({
+          title: item.product,
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+          currency_id: 'ARS'
+        })),
+        ...(order.shipping_cost > 0 ? [{
+          title: 'Envío',
+          quantity: 1,
+          unit_price: order.shipping_cost,
+          currency_id: 'ARS'
+        }] : [])
+      ],
+      external_reference: String(order.id)
+    };
+
+    // back_urls y auto_return solo funcionan con URLs públicas (no localhost)
+    if (!isLocalhost) {
+      preferenceBody.back_urls = {
+        success: `${baseUrl}/payment/success`,
+        failure: `${baseUrl}/payment/failure`,
+        pending: `${baseUrl}/payment/pending`
+      };
+      preferenceBody.auto_return = 'approved';
+      preferenceBody.notification_url = `${baseUrl}/webhook/mercadopago`;
+    }
+
     const preference = new Preference(client);
-    const result = await preference.create({
-      body: {
-        items: [
-          ...items.map(item => ({
-            title: item.product,
-            quantity: item.quantity,
-            unit_price: item.unit_price,
-            currency_id: 'ARS'
-          })),
-          ...(order.shipping_cost > 0 ? [{
-            title: 'Envío',
-            quantity: 1,
-            unit_price: order.shipping_cost,
-            currency_id: 'ARS'
-          }] : [])
-        ],
-        back_urls: {
-          success: `${baseUrl}/payment/success`,
-          failure: `${baseUrl}/payment/failure`,
-          pending: `${baseUrl}/payment/pending`
-        },
-        auto_return: 'approved',
-        notification_url: `${baseUrl}/webhook/mercadopago`,
-        external_reference: String(order.id)
-      }
-    });
+    const result = await preference.create({ body: preferenceBody });
 
     updateOrderPayment.run({
       id: order.id,

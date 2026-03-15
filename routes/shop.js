@@ -23,11 +23,12 @@ router.post('/calculate-shipping', (req, res) => {
   const { distance_km } = req.body;
   if (!distance_km || distance_km <= 0) return res.json({ error: 'Distancia inválida' });
 
+  const roundedKm = Math.round(distance_km); // Sin decimales
   const rateRow = getSetting.get('shipping_rate_per_km');
   const rate = rateRow ? parseFloat(rateRow.value) : 250;
-  const shippingCost = Math.round(distance_km * rate);
+  const shippingCost = Math.round(roundedKm * rate);
 
-  res.json({ distance_km, shipping_cost: shippingCost });
+  res.json({ distance_km: roundedKm, shipping_cost: shippingCost });
 });
 
 router.post('/order', async (req, res) => {
