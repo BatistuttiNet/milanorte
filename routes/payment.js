@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { MercadoPagoConfig, Preference } = require('mercadopago');
-const { getOrder, updateOrderPayment } = require('../db/init');
+const { getOrder, updateOrderPayment, updateOrderPaymentFromRedirect } = require('../db/init');
 
 const client = new MercadoPagoConfig({
   accessToken: process.env.MP_ACCESS_TOKEN
@@ -63,7 +63,22 @@ router.get('/create/:orderId', async (req, res) => {
 
 router.get('/success', (req, res) => {
   const orderId = req.query.external_reference;
+  const paymentId = req.query.payment_id || req.query.collection_id;
+  const mpStatus = req.query.status || req.query.collection_status;
+
   const order = orderId ? getOrder.get(orderId) : null;
+
+  // Capture payment_id from redirect as fallback (useful when webhook doesn't arrive)
+  if (order && paymentId) {
+    const newStatus = mpStatus === 'approved' ? 'paid' : order.status;
+    updateOrderPaymentFromRedirect.run({
+      id: order.id,
+      mp_payment_id: String(paymentId),
+      mp_status: mpStatus || 'approved',
+      status: newStatus
+    });
+  }
+
   res.render('success', {
     orderId: orderId || '?',
     deliveryDay: order ? order.delivery_day : 'miercoles'

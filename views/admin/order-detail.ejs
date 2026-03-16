@@ -74,14 +74,16 @@
       </tbody>
     </table>
 
-    <% if (order.mp_payment_id || order.mp_preference_id) { %>
-      <div style="background: var(--cream); padding: 1rem; border-radius: 8px; margin-top: 1rem;">
-        <label style="font-size: 0.8rem; text-transform: uppercase; color: var(--gray);">MercadoPago</label>
-        <% if (order.mp_payment_id) { %><p>Payment ID: <%= order.mp_payment_id %></p><% } %>
-        <% if (order.mp_status) { %><p>Estado MP: <%= order.mp_status %></p><% } %>
-        <% if (order.mp_preference_id) { %><p>Preference: <%= order.mp_preference_id %></p><% } %>
-      </div>
-    <% } %>
+    <div style="background: var(--cream); padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+      <label style="font-size: 0.8rem; text-transform: uppercase; color: var(--gray);">MercadoPago — Conciliación</label>
+      <% if (order.mp_payment_id) { %>
+        <p><strong>N° Pago:</strong> <%= order.mp_payment_id %></p>
+        <% if (order.mp_status) { %><p><strong>Estado MP:</strong> <%= order.mp_status %></p><% } %>
+      <% } else { %>
+        <p style="color: #c62828;">Sin pago registrado</p>
+      <% } %>
+      <% if (order.mp_preference_id) { %><p style="font-size: 0.85rem; color: var(--gray);">Preference: <%= order.mp_preference_id %></p><% } %>
+    </div>
 
     <form action="/admin/orders/<%= order.id %>/status" method="POST" class="status-form">
       <label style="font-weight: 600;">Cambiar estado:</label>

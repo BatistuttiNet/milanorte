@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { createOrder, getOrder, getSetting } = require('../db/init');
+const { createOrder, getOrder, getSetting, findOrderByPhone, createVerification, getActiveVerification, markPhoneVerified, isPhoneVerified } = require('../db/init');
+const fetch = require('node-fetch');
 
 // La Rioja 1346, Tigre coordinates (hidden from client)
 const ORIGIN_LAT = -34.4265;
@@ -31,6 +32,95 @@ router.post('/calculate-shipping', (req, res) => {
   res.json({ distance_km: roundedKm, shipping_cost: shippingCost });
 });
 
+// Check if phone already has a previous order (returning customer)
+router.post('/check-phone', (req, res) => {
+  const { phone } = req.body;
+  if (!phone) return res.json({ verified: false });
+
+  const digits = phone.replace(/\D/g, '');
+  if (digits.length !== 10) return res.json({ verified: false });
+
+  const existingOrder = findOrderByPhone.get(digits);
+  if (existingOrder) return res.json({ verified: true, returning: true });
+
+  const verified = isPhoneVerified.get(digits);
+  if (verified) return res.json({ verified: true });
+
+  return res.json({ verified: false });
+});
+
+// Send verification code via WhatsApp
+router.post('/verify-phone', async (req, res) => {
+  const { phone } = req.body;
+  if (!phone) return res.json({ error: 'Teléfono requerido' });
+
+  const digits = phone.replace(/\D/g, '');
+  if (digits.length !== 10) return res.json({ error: 'Teléfono inválido' });
+
+  // Generate 6-digit code
+  const code = String(Math.floor(100000 + Math.random() * 900000));
+
+  // Save to DB
+  createVerification.run({ phone: digits, code });
+
+  // Send via WhatsApp Cloud API
+  const waToken = process.env.WHATSAPP_TOKEN;
+  const waPhoneId = process.env.WHATSAPP_PHONE_ID;
+
+  if (!waToken || !waPhoneId) {
+    console.error('WhatsApp Cloud API not configured (WHATSAPP_TOKEN / WHATSAPP_PHONE_ID)');
+    return res.json({ error: 'WhatsApp no configurado. Contactá al administrador.' });
+  }
+
+  try {
+    const waNumber = '549' + digits; // Argentina E.164 format without +
+    const response = await fetch(`https://graph.facebook.com/v21.0/${waPhoneId}/messages`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${waToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        to: waNumber,
+        type: 'text',
+        text: { body: `Tu código de verificación para Milanorte es: ${code}` }
+      })
+    });
+
+    const data = await response.json();
+    if (data.error) {
+      console.error('WhatsApp API error:', data.error);
+      return res.json({ error: 'No se pudo enviar el código. Verificá tu número.' });
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('WhatsApp send error:', err);
+    res.json({ error: 'Error al enviar el código. Intentá de nuevo.' });
+  }
+});
+
+// Verify code
+router.post('/verify-code', (req, res) => {
+  const { phone, code } = req.body;
+  if (!phone || !code) return res.json({ verified: false, error: 'Datos incompletos' });
+
+  const digits = phone.replace(/\D/g, '');
+  const verification = getActiveVerification.get(digits);
+
+  if (!verification) {
+    return res.json({ verified: false, error: 'Código expirado. Solicitá uno nuevo.' });
+  }
+
+  if (verification.code !== code.trim()) {
+    return res.json({ verified: false, error: 'Código incorrecto' });
+  }
+
+  markPhoneVerified.run(digits, code.trim());
+  res.json({ verified: true });
+});
+
 router.post('/order', async (req, res) => {
   const { qty_nalga, qty_bife, delivery_day, delivery_slot, customer_name, customer_phone, customer_email, customer_address, customer_lat, customer_lng } = req.body;
   const products = res.locals.products;
@@ -44,6 +134,23 @@ router.post('/order', async (req, res) => {
 
   if (!delivery_day || !delivery_slot || !customer_name || !customer_phone || !customer_address) {
     return res.redirect('/');
+  }
+
+  // Validate Argentina phone: 10 digits, no leading 0
+  const phoneDigits = customer_phone.replace(/\D/g, '');
+  if (phoneDigits.length !== 10 || !/^[1-9]/.test(phoneDigits)) {
+    return res.redirect('/');
+  }
+
+  // Check phone verification if enabled
+  const verificationSetting = getSetting.get('whatsapp_verification_enabled');
+  const verificationEnabled = verificationSetting && verificationSetting.value === '1';
+  if (verificationEnabled) {
+    const hasOrder = findOrderByPhone.get(phoneDigits);
+    const hasVerification = isPhoneVerified.get(phoneDigits);
+    if (!hasOrder && !hasVerification) {
+      return res.redirect('/');
+    }
   }
 
   const items = [];
@@ -80,7 +187,7 @@ router.post('/order', async (req, res) => {
 
   const result = createOrder.run({
     customer_name,
-    customer_phone,
+    customer_phone: phoneDigits,
     customer_email: customer_email || null,
     customer_address,
     delivery_day,

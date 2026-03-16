@@ -73,6 +73,8 @@ router.post('/settings', requireAdmin, (req, res) => {
       setSetting.run(key, req.body[key]);
     }
   }
+  // Checkbox: if unchecked, it's not sent in the form body
+  setSetting.run('whatsapp_verification_enabled', req.body.whatsapp_verification_enabled ? '1' : '0');
   res.redirect('/admin/settings?saved=1');
 });
 

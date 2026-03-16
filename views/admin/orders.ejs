@@ -30,6 +30,7 @@
           <th>Total</th>
           <th>Entrega</th>
           <th>Estado</th>
+          <th>Pago MP</th>
           <th>Fecha</th>
         </tr>
       </thead>
@@ -46,6 +47,7 @@
             <td>$<%= o.total_amount %></td>
             <td><%= o.delivery_day === 'miercoles' ? 'Mie' : 'Sab' %></td>
             <td><span class="status-badge status-<%= o.status %>"><%= o.status %></span></td>
+            <td><%= o.mp_payment_id ? o.mp_payment_id : '-' %></td>
             <td><%= o.created_at %></td>
           </tr>
         <% }) %>

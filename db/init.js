@@ -42,6 +42,18 @@ db.exec(`
   INSERT OR IGNORE INTO settings (key, value) VALUES ('price_bife_chorizo', '35000');
   INSERT OR IGNORE INTO settings (key, value) VALUES ('shipping_rate_per_km', '250');
   INSERT OR IGNORE INTO settings (key, value) VALUES ('free_shipping_threshold', '150000');
+  INSERT OR IGNORE INTO settings (key, value) VALUES ('whatsapp_verification_enabled', '0');
+
+  CREATE TABLE IF NOT EXISTS phone_verifications (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    phone TEXT NOT NULL,
+    code TEXT NOT NULL,
+    expires_at TEXT NOT NULL,
+    verified INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT (datetime('now', 'localtime'))
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_phone_verifications_phone ON phone_verifications(phone);
 `);
 
 // Migrations: add new columns (try/catch for idempotency)
@@ -86,6 +98,33 @@ const updateOrderFromWebhook = db.prepare(`
   WHERE id = @id
 `);
 
+const updateOrderPaymentFromRedirect = db.prepare(`
+  UPDATE orders SET mp_payment_id = @mp_payment_id, mp_status = @mp_status, status = @status, updated_at = datetime('now', 'localtime')
+  WHERE id = @id AND (mp_payment_id IS NULL OR mp_payment_id = '')
+`);
+
+// Phone verification helpers
+const findOrderByPhone = db.prepare('SELECT id FROM orders WHERE customer_phone = ? LIMIT 1');
+
+const createVerification = db.prepare(`
+  INSERT INTO phone_verifications (phone, code, expires_at)
+  VALUES (@phone, @code, datetime('now', 'localtime', '+10 minutes'))
+`);
+
+const getActiveVerification = db.prepare(`
+  SELECT * FROM phone_verifications
+  WHERE phone = ? AND verified = 0 AND expires_at > datetime('now', 'localtime')
+  ORDER BY created_at DESC LIMIT 1
+`);
+
+const markPhoneVerified = db.prepare(`
+  UPDATE phone_verifications SET verified = 1 WHERE phone = ? AND code = ?
+`);
+
+const isPhoneVerified = db.prepare(`
+  SELECT id FROM phone_verifications WHERE phone = ? AND verified = 1 LIMIT 1
+`);
+
 const listOrders = db.prepare('SELECT * FROM orders ORDER BY created_at DESC');
 
 const listOrdersByStatus = db.prepare('SELECT * FROM orders WHERE status = ? ORDER BY created_at DESC');
@@ -102,7 +141,13 @@ module.exports = {
   updateOrderPayment,
   updateOrderStatus,
   updateOrderFromWebhook,
+  updateOrderPaymentFromRedirect,
   listOrders,
   listOrdersByStatus,
-  listOrdersByDelivery
+  listOrdersByDelivery,
+  findOrderByPhone,
+  createVerification,
+  getActiveVerification,
+  markPhoneVerified,
+  isPhoneVerified
 };

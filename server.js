@@ -65,6 +65,9 @@ app.use((req, res, next) => {
   res.locals.freeShippingThreshold = thresholdRow ? parseFloat(thresholdRow.value) : 150000;
   res.locals.googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY || '';
 
+  const waVerification = getSetting.get('whatsapp_verification_enabled');
+  res.locals.phoneVerificationEnabled = waVerification && waVerification.value === '1';
+
   next();
 });
 
