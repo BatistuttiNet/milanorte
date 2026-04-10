@@ -141,6 +141,23 @@ footer p { font-size: 0.9rem; }
   margin: 1.5rem 0 !important;
 }
 
+.intro-cta {
+  font-size: 1.15rem !important;
+  font-weight: 600;
+  color: var(--gold-dark) !important;
+  margin-top: 1.5rem !important;
+}
+
+.intro-footer {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 1.1rem !important;
+  color: var(--gray) !important;
+  margin-top: 1rem !important;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+}
+
 /* === Features Section === */
 .features-section {
   display: grid;
@@ -710,5 +727,5 @@ footer p { font-size: 0.9rem; }
   .nav-logo { height: 36px; }
   .orders-table { font-size: 0.8rem; }
   .orders-table th, .orders-table td { padding: 0.5rem; }
-  .intro-section h2 { font-size: 1.4rem; }
+  .intro-highlight { font-size: 1.3rem !important; }
 }

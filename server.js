@@ -7,13 +7,23 @@ const { getSetting } = require('./db/init');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Warnings de seguridad para producción
+if (process.env.NODE_ENV === 'production') {
+  if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET === 'cambiar-este-secreto') {
+    console.warn('⚠️  SESSION_SECRET no está configurado. Usá un string aleatorio seguro.');
+  }
+  if (process.env.ADMIN_PASSWORD === 'admin123') {
+    console.warn('⚠️  ADMIN_PASSWORD es "admin123". Cambialo por uno seguro.');
+  }
+}
+
 // Products config (defaults, overridden by DB settings)
 const PRODUCTS = [
   {
     id: 'nalga',
     title: 'Milanesas de Nalga',
     description: 'Milanesas de nalga premium, rebozado casero crujiente',
-    pricePerKg: 20000,
+    pricePerKg: 28000,
     minKg: 2,
     image: '/images/nalga.svg',
     settingsKey: 'price_nalga'
@@ -22,7 +32,7 @@ const PRODUCTS = [
     id: 'bife-chorizo',
     title: 'Milanesas de Bife de Chorizo',
     description: 'Milanesas de bife de chorizo premium, corte grueso y tierno',
-    pricePerKg: 35000,
+    pricePerKg: 36000,
     minKg: 2,
     image: '/images/bife-chorizo.jpeg',
     settingsKey: 'price_bife_chorizo'

@@ -38,8 +38,8 @@ db.exec(`
     updated_at TEXT DEFAULT (datetime('now', 'localtime'))
   );
 
-  INSERT OR IGNORE INTO settings (key, value) VALUES ('price_nalga', '20000');
-  INSERT OR IGNORE INTO settings (key, value) VALUES ('price_bife_chorizo', '35000');
+  INSERT OR IGNORE INTO settings (key, value) VALUES ('price_nalga', '28000');
+  INSERT OR IGNORE INTO settings (key, value) VALUES ('price_bife_chorizo', '36000');
   INSERT OR IGNORE INTO settings (key, value) VALUES ('shipping_rate_per_km', '250');
   INSERT OR IGNORE INTO settings (key, value) VALUES ('free_shipping_threshold', '150000');
   INSERT OR IGNORE INTO settings (key, value) VALUES ('whatsapp_verification_enabled', '0');
