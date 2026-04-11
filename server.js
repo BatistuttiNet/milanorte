@@ -96,6 +96,13 @@ app.use((req, res, next) => {
   const waVerification = getSetting.get('whatsapp_verification_enabled');
   res.locals.phoneVerificationEnabled = waVerification && waVerification.value === '1';
 
+  const mpEnabled = getSetting.get('mp_enabled');
+  res.locals.mpEnabled = mpEnabled ? mpEnabled.value === '1' : true; // default enabled
+  const transferAlias = getSetting.get('transfer_alias');
+  res.locals.transferAlias = transferAlias ? transferAlias.value : '';
+  const paymentWhatsapp = getSetting.get('payment_whatsapp');
+  res.locals.paymentWhatsapp = paymentWhatsapp ? paymentWhatsapp.value : '';
+
   next();
 });
 

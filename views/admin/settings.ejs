@@ -56,6 +56,28 @@
         <input type="number" id="free_shipping_threshold" name="free_shipping_threshold" value="<%= settings.free_shipping_threshold || 150000 %>" min="0" step="1000" required>
       </div>
 
+      <h3 style="margin-top: 2rem; margin-bottom: 1.5rem;">Pagos</h3>
+
+      <div class="form-group">
+        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+          <input type="checkbox" name="mp_enabled" value="1" <%= settings.mp_enabled === '1' ? 'checked' : '' %> style="width: auto;">
+          Habilitar pago con MercadoPago
+        </label>
+        <small style="color: var(--gray);">Si está desactivado, se mostrará la opción de transferencia bancaria.</small>
+      </div>
+
+      <div class="form-group">
+        <label for="transfer_alias">Alias para transferencias</label>
+        <input type="text" id="transfer_alias" name="transfer_alias" value="<%= settings.transfer_alias || '' %>" placeholder="Ej: milanorte.mp">
+        <small style="color: var(--gray);">Se muestra al cliente cuando MercadoPago está desactivado.</small>
+      </div>
+
+      <div class="form-group">
+        <label for="payment_whatsapp">WhatsApp para comprobantes</label>
+        <input type="text" id="payment_whatsapp" name="payment_whatsapp" value="<%= settings.payment_whatsapp || '' %>" placeholder="Ej: 1155667788 (sin 0 ni 15)">
+        <small style="color: var(--gray);">El cliente envía el comprobante de transferencia a este número.</small>
+      </div>
+
       <h3 style="margin-top: 2rem; margin-bottom: 1.5rem;">WhatsApp</h3>
 
       <div class="form-group">

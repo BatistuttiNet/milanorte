@@ -77,13 +77,14 @@ router.get('/settings', requireAdmin, (req, res) => {
 });
 
 router.post('/settings', requireAdmin, (req, res) => {
-  const fields = ['price_nalga', 'price_pollo', 'price_bife_chorizo', 'price_pelleto', 'shipping_rate_per_km', 'free_shipping_threshold'];
+  const fields = ['price_nalga', 'price_pollo', 'price_bife_chorizo', 'price_pelleto', 'shipping_rate_per_km', 'free_shipping_threshold', 'transfer_alias', 'payment_whatsapp'];
   for (const key of fields) {
     if (req.body[key] !== undefined) {
       setSetting.run(key, req.body[key]);
     }
   }
-  // Checkbox: if unchecked, it's not sent in the form body
+  // Checkboxes: if unchecked, they're not sent in the form body
+  setSetting.run('mp_enabled', req.body.mp_enabled ? '1' : '0');
   setSetting.run('whatsapp_verification_enabled', req.body.whatsapp_verification_enabled ? '1' : '0');
   res.redirect('/admin/settings?saved=1');
 });

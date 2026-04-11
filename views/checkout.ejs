@@ -47,7 +47,17 @@
       <p><strong>Entrega:</strong> <%= order.delivery_day === 'miercoles' ? 'Miércoles' : 'Sábado' %><% if (order.delivery_slot) { %> — <%= order.delivery_slot === 'manana' ? 'Mañana (9 a 12hs)' : order.delivery_slot === 'tarde' ? 'Tarde (13 a 17hs)' : 'Noche (18 a 20hs)' %><% } %></p>
     </div>
 
-    <a href="/payment/create/<%= order.id %>" class="btn btn-mp">Pagar con MercadoPago</a>
+    <% if (mpEnabled) { %>
+      <a href="/payment/create/<%= order.id %>" class="btn btn-mp">Pagar con MercadoPago</a>
+    <% } else { %>
+      <div class="transfer-info" style="background: var(--off-white); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--gray-border); margin-top: 1rem;">
+        <h3 style="margin-bottom: 1rem;">Pago por transferencia</h3>
+        <p style="margin-bottom: 0.5rem;"><strong>Alias:</strong> <span style="font-size: 1.2rem; font-weight: 700; color: var(--black); user-select: all;"><%= transferAlias %></span></p>
+        <p style="margin-bottom: 1rem;"><strong>Monto a transferir:</strong> <span style="font-size: 1.2rem; font-weight: 700; color: var(--black);"><%= formatPrice(order.total_amount) %></span></p>
+        <p style="color: var(--gray); font-size: 0.9rem; margin-bottom: 1rem;">Realizá la transferencia y enviá el comprobante por WhatsApp para confirmar tu pedido.</p>
+        <a href="https://wa.me/549<%= paymentWhatsapp %>?text=<%= encodeURIComponent('Hola! Adjunto comprobante de pago del pedido #' + order.id + ' por ' + formatPrice(order.total_amount)) %>" target="_blank" class="btn btn-primary" style="background: #25D366; display: inline-block;">Enviar comprobante por WhatsApp</a>
+      </div>
+    <% } %>
   </div>
 </div>
 
