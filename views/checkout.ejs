@@ -16,23 +16,23 @@
       <tbody>
         <% items.forEach(item => { %>
           <tr>
-            <td><%= item.product %></td>
-            <td><%= item.quantity %> kg</td>
-            <td><%= formatPrice(item.unit_price) %>/kg</td>
-            <td><%= formatPrice(item.quantity * item.unit_price) %></td>
+            <td data-label="Producto"><%= item.product %></td>
+            <td data-label="Cantidad"><%= item.quantity %> kg</td>
+            <td data-label="Precio unit."><%= formatPrice(item.unit_price) %>/kg</td>
+            <td data-label="Subtotal"><%= formatPrice(item.quantity * item.unit_price) %></td>
           </tr>
         <% }) %>
         <% if (order.shipping_cost > 0) { %>
           <tr>
-            <td>Envío</td>
-            <td><%= order.shipping_distance_km ? Math.round(order.shipping_distance_km) + ' km' : '' %></td>
+            <td data-label="Concepto">Envío</td>
+            <td data-label="Distancia"><%= order.shipping_distance_km ? Math.round(order.shipping_distance_km) + ' km' : '' %></td>
             <td></td>
-            <td><%= formatPrice(order.shipping_cost) %></td>
+            <td data-label="Costo"><%= formatPrice(order.shipping_cost) %></td>
           </tr>
         <% } %>
         <tr class="total-row">
-          <td colspan="3">Total</td>
-          <td><%= formatPrice(order.total_amount) %></td>
+          <td colspan="3" data-label="">Total</td>
+          <td data-label=""><%= formatPrice(order.total_amount) %></td>
         </tr>
       </tbody>
     </table>

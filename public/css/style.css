@@ -728,4 +728,37 @@ footer p { font-size: 0.9rem; }
   .orders-table { font-size: 0.8rem; }
   .orders-table th, .orders-table td { padding: 0.5rem; }
   .intro-highlight { font-size: 1.3rem !important; }
+
+  .checkout-table thead { display: none; }
+  .checkout-table, .checkout-table tbody, .checkout-table tr, .checkout-table td {
+    display: block; width: 100%;
+  }
+  .checkout-table tr {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--gray-border);
+  }
+  .checkout-table td {
+    padding: 0.2rem 0;
+    border-bottom: none;
+    font-size: 0.95rem;
+  }
+  .checkout-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+  }
+  .checkout-table .total-row td {
+    border-top: none;
+    font-size: 1.1rem;
+  }
+  .checkout-table .total-row td:first-child { border-top: 2px solid var(--black); padding-top: 0.75rem; }
+
+  .result-page { padding: 2.5rem 1.5rem; }
+  .result-page .icon { font-size: 3rem; }
+  .result-page h1 { font-size: 1.4rem; }
+  .result-page .order-id { font-size: 1.25rem; }
 }
