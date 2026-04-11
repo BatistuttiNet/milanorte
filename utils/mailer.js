@@ -1,12 +1,23 @@
-const nodemailer = require('nodemailer');
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const FROM_EMAIL = process.env.FROM_EMAIL || 'Milanorte <onboarding@resend.dev>';
+const NOTIFY_EMAIL = process.env.NOTIFY_EMAIL;
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASSWORD
+async function sendEmail({ to, subject, html }) {
+  if (!RESEND_API_KEY) return;
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${RESEND_API_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ from: FROM_EMAIL, to, subject, html })
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Resend API error ${res.status}: ${body}`);
   }
-});
+  return res.json();
+}
 
 function formatPrice(amount) {
   return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(amount);
@@ -57,25 +68,23 @@ function buildOrderHTML(order, items) {
 }
 
 async function sendOrderNotification(order, items) {
-  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD || !process.env.NOTIFY_EMAIL) return;
+  if (!RESEND_API_KEY || !NOTIFY_EMAIL) return;
   try {
-    await transporter.sendMail({
-      from: `"Milanorte" <${process.env.GMAIL_USER}>`,
-      to: process.env.NOTIFY_EMAIL,
+    await sendEmail({
+      to: NOTIFY_EMAIL,
       subject: `Nuevo pedido #${order.id} - ${order.customer_name}`,
       html: `<h2 style="color:#c9a84c">¡Nuevo pedido!</h2>${buildOrderHTML(order, items)}`
     });
-    console.log(`✅ Email de notificación enviado a ${process.env.NOTIFY_EMAIL} (pedido #${order.id})`);
+    console.log(`✅ Email de notificación enviado a ${NOTIFY_EMAIL} (pedido #${order.id})`);
   } catch (err) {
     console.error('Error enviando email al dueño:', err.message);
   }
 }
 
 async function sendOrderConfirmation(order, items) {
-  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD || !order.customer_email) return;
+  if (!RESEND_API_KEY || !order.customer_email) return;
   try {
-    await transporter.sendMail({
-      from: `"Milanorte" <${process.env.GMAIL_USER}>`,
+    await sendEmail({
       to: order.customer_email,
       subject: `Confirmación de pedido #${order.id} - Milanorte`,
       html: `
@@ -92,13 +101,12 @@ async function sendOrderConfirmation(order, items) {
 }
 
 async function sendTestEmail() {
-  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD || !process.env.NOTIFY_EMAIL) {
-    return { ok: false, error: 'Faltan variables de entorno: GMAIL_USER, GMAIL_APP_PASSWORD o NOTIFY_EMAIL' };
+  if (!RESEND_API_KEY || !NOTIFY_EMAIL) {
+    return { ok: false, error: 'Faltan variables de entorno: RESEND_API_KEY o NOTIFY_EMAIL' };
   }
   try {
-    await transporter.sendMail({
-      from: `"Milanorte" <${process.env.GMAIL_USER}>`,
-      to: process.env.NOTIFY_EMAIL,
+    await sendEmail({
+      to: NOTIFY_EMAIL,
       subject: 'Test de email - Milanorte',
       html: `
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
@@ -108,7 +116,7 @@ async function sendTestEmail() {
           <div style="padding:20px">
             <h2 style="color:#333">Test de email exitoso</h2>
             <p>Si estás leyendo esto, la configuración de email funciona correctamente.</p>
-            <p style="color:#666;font-size:0.9em">Enviado a: ${process.env.NOTIFY_EMAIL}</p>
+            <p style="color:#666;font-size:0.9em">Enviado a: ${NOTIFY_EMAIL}</p>
           </div>
         </div>
       `
