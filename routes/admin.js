@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { listOrders, listOrdersByStatus, listOrdersByDelivery, getOrder, updateOrderStatus, getAllSettings, setSetting } = require('../db/init');
-const { sendTestEmail } = require('../utils/mailer');
+const { sendTestEmail, sendOrderConfirmation } = require('../utils/mailer');
 
 // Auth middleware
 function requireAdmin(req, res, next) {
@@ -55,7 +55,16 @@ router.get('/orders/:id', requireAdmin, (req, res) => {
 });
 
 router.post('/orders/:id/status', requireAdmin, (req, res) => {
+  const order = getOrder.get(req.params.id);
+  const wasPaid = order && order.status === 'paid';
   updateOrderStatus.run({ id: req.params.id, status: req.body.status });
+
+  // Send confirmation email to customer when manually marked as paid
+  if (req.body.status === 'paid' && !wasPaid && order) {
+    const items = JSON.parse(order.items_json);
+    sendOrderConfirmation(order, items);
+  }
+
   res.redirect(`/admin/orders/${req.params.id}`);
 });
 

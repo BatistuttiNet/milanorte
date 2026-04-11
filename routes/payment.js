@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { MercadoPagoConfig, Preference } = require('mercadopago');
 const { getOrder, updateOrderPayment, updateOrderPaymentFromRedirect } = require('../db/init');
-const { sendOrderNotification, sendOrderConfirmation } = require('../utils/mailer');
+const { sendOrderConfirmation } = require('../utils/mailer');
 
 const client = new MercadoPagoConfig({
   accessToken: process.env.MP_ACCESS_TOKEN
@@ -84,7 +84,6 @@ router.get('/success', (req, res) => {
     if (mpStatus === 'approved' && wasPending) {
       const updatedOrder = getOrder.get(order.id);
       const items = JSON.parse(updatedOrder.items_json);
-      sendOrderNotification(updatedOrder, items);
       sendOrderConfirmation(updatedOrder, items);
     }
   }

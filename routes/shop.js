@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { createOrder, getOrder, getSetting, findOrderByPhone, createVerification, getActiveVerification, markPhoneVerified, isPhoneVerified } = require('../db/init');
 const fetch = require('node-fetch');
+const { sendOrderNotification } = require('../utils/mailer');
 
 // La Rioja 1346, Tigre coordinates (hidden from client)
 const ORIGIN_LAT = -34.4265;
@@ -201,6 +202,9 @@ router.post('/order', async (req, res) => {
   });
 
   const order = getOrder.get(result.lastInsertRowid);
+
+  // Notificar al admin del nuevo pedido
+  sendOrderNotification(order, items);
 
   res.render('checkout', { order, items });
 });
