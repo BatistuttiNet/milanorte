@@ -7,19 +7,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const phoneVerificationEnabled = orderForm && orderForm.dataset.phoneVerification === '1';
   let phoneVerified = false;
 
-  // Quantity selectors (kg-based, min 2kg jumps: 0 -> 2 -> 3 -> 4 ...)
+  // Quantity selectors (kg-based, 1kg steps)
   document.querySelectorAll('.qty-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      const card = btn.closest('.product-card');
       const input = btn.closest('.qty-selector').querySelector('.qty-input');
       const display = btn.closest('.qty-selector').querySelector('.qty-value');
-      const minKg = parseInt(card.dataset.minKg) || 2;
       let val = parseInt(input.value) || 0;
 
       if (btn.dataset.action === 'plus') {
-        val = val === 0 ? minKg : Math.min(val + 1, 50);
+        val = Math.min(val + 1, 50);
       } else {
-        val = val <= minKg ? 0 : val - 1;
+        val = Math.max(val - 1, 0);
       }
 
       input.value = val;
@@ -75,11 +73,35 @@ document.addEventListener('DOMContentLoaded', () => {
     validateForm();
   }
 
+  // Time slots per delivery day
+  const slotsByDay = {
+    miercoles: [
+      { value: 'tarde', label: 'Tarde', time: '13 a 17hs' },
+      { value: 'noche', label: 'Noche', time: '18 a 20hs' }
+    ],
+    sabado: [
+      { value: 'manana', label: 'Mañana', time: '9 a 12hs' },
+      { value: 'tarde', label: 'Tarde', time: '13 a 17hs' }
+    ]
+  };
+
   // Show time slots when delivery day is selected
   const dayRadios = document.querySelectorAll('[name="delivery_day"]');
   const timeSlotsDiv = document.getElementById('time-slots');
+  const timeSlotsOptions = document.getElementById('time-slots-options');
   dayRadios.forEach(radio => {
     radio.addEventListener('change', () => {
+      const slots = slotsByDay[radio.value] || [];
+      timeSlotsOptions.innerHTML = slots.map(s => `
+        <div class="delivery-option">
+          <input type="radio" id="slot-${s.value}" name="delivery_slot" value="${s.value}">
+          <label for="slot-${s.value}">${s.label}<span class="slot-time">${s.time}</span></label>
+        </div>
+      `).join('');
+      // Re-bind slot radios for validation
+      timeSlotsOptions.querySelectorAll('[name="delivery_slot"]').forEach(r => {
+        r.addEventListener('change', validateForm);
+      });
       if (timeSlotsDiv) timeSlotsDiv.style.display = 'block';
       validateForm();
     });
@@ -93,23 +115,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Form validation
   function validateForm() {
-    let hasProducts = false;
+    let totalKg = 0;
     document.querySelectorAll('.qty-input').forEach(input => {
-      if (parseInt(input.value) > 0) hasProducts = true;
+      totalKg += parseInt(input.value) || 0;
     });
+    const hasMinKg = totalKg >= 2;
     const hasDay = !!document.querySelector('[name="delivery_day"]:checked');
     const hasSlot = !!document.querySelector('[name="delivery_slot"]:checked');
     const phoneOk = !phoneVerificationEnabled || phoneVerified;
 
     const submitBtn = document.getElementById('submit-order');
-    const canSubmit = hasProducts && hasDay && hasSlot && phoneOk;
+    const canSubmit = hasMinKg && hasDay && hasSlot && phoneOk;
     if (submitBtn) submitBtn.disabled = !canSubmit;
 
     // Show hint about what's missing
     const hint = document.getElementById('submit-hint');
     if (hint) {
       const missing = [];
-      if (!hasProducts) missing.push('Seleccioná al menos un producto');
+      if (totalKg === 0) missing.push('Seleccioná al menos un producto');
+      else if (!hasMinKg) missing.push('El pedido mínimo es de 2 kg en total');
       if (!hasDay) missing.push('Elegí un día de entrega');
       if (!hasSlot && hasDay) missing.push('Elegí un horario de entrega');
       if (!phoneOk) missing.push('Verificá tu teléfono por WhatsApp');
@@ -417,6 +441,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Calculate shipping
       calculateShipping(lat, lng);
+
+      // Show delivery day/slot section
+      const deliverySection = document.getElementById('delivery-section');
+      if (deliverySection) deliverySection.style.display = 'block';
     });
   }
   if (window._gmCallbacks) window._gmCallbacks.push(initPlacesAutocomplete);

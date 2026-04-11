@@ -25,7 +25,7 @@ const PRODUCTS = [
     description: 'Milanesas de nalga premium, rebozado casero crujiente',
     pricePerKg: 28000,
     minKg: 2,
-    image: '/images/nalga.svg',
+    image: '/images/nalga.jpeg',
     settingsKey: 'price_nalga'
   },
   {
@@ -34,7 +34,7 @@ const PRODUCTS = [
     description: 'Milanesas de pollo premium, rebozado casero crujiente',
     pricePerKg: 28000,
     minKg: 2,
-    image: '/images/pollo.svg',
+    image: '/images/pollo.jpeg',
     settingsKey: 'price_pollo'
   },
   {
@@ -52,7 +52,7 @@ const PRODUCTS = [
     description: 'Milanesas de pelleto premium, sabor intenso y tierno',
     pricePerKg: 28000,
     minKg: 2,
-    image: '/images/pelleto.svg',
+    image: '/images/peceto.jpeg',
     settingsKey: 'price_pelleto'
   }
 ];

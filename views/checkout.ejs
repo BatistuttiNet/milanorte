@@ -43,8 +43,8 @@
       <% if (order.customer_email) { %>
         <p><strong>Email:</strong> <%= order.customer_email %></p>
       <% } %>
-      <p><strong>Dirección:</strong> <%= order.customer_address %></p>
-      <p><strong>Entrega:</strong> <%= order.delivery_day === 'miercoles' ? 'Miércoles' : 'Sábado' %><% if (order.delivery_slot) { %> — <%= order.delivery_slot === 'manana' ? 'Mañana (10 a 13hs)' : order.delivery_slot === 'tarde' ? 'Tarde (13 a 18hs)' : 'Noche (18 a 20hs)' %><% } %></p>
+      <p><strong>Dirección:</strong> <%= order.customer_address %><% if (order.address_extra) { %> (<%= order.address_extra %>)<% } %></p>
+      <p><strong>Entrega:</strong> <%= order.delivery_day === 'miercoles' ? 'Miércoles' : 'Sábado' %><% if (order.delivery_slot) { %> — <%= order.delivery_slot === 'manana' ? 'Mañana (9 a 12hs)' : order.delivery_slot === 'tarde' ? 'Tarde (13 a 17hs)' : 'Noche (18 a 20hs)' %><% } %></p>
     </div>
 
     <a href="/payment/create/<%= order.id %>" class="btn btn-mp">Pagar con MercadoPago</a>

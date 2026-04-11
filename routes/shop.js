@@ -123,7 +123,7 @@ router.post('/verify-code', (req, res) => {
 });
 
 router.post('/order', async (req, res) => {
-  const { delivery_day, delivery_slot, customer_name, customer_phone, customer_email, customer_address, customer_lat, customer_lng } = req.body;
+  const { delivery_day, delivery_slot, customer_name, customer_phone, customer_email, customer_address, address_extra, customer_lat, customer_lng } = req.body;
   const products = res.locals.products;
 
   // Build items dynamically from all products
@@ -135,11 +135,12 @@ router.post('/order', async (req, res) => {
     }
   });
 
-  if (items.length === 0) {
+  const totalKg = items.reduce((sum, item) => sum + item.quantity, 0);
+  if (items.length === 0 || totalKg < 2) {
     return res.redirect('/');
   }
 
-  if (!delivery_day || !delivery_slot || !customer_name || !customer_phone || !customer_address) {
+  if (!delivery_day || !delivery_slot || !customer_name || !customer_phone || !customer_email || !customer_address) {
     return res.redirect('/');
   }
 
@@ -189,6 +190,7 @@ router.post('/order', async (req, res) => {
     customer_phone: phoneDigits,
     customer_email: customer_email || null,
     customer_address,
+    address_extra: address_extra || null,
     delivery_day,
     delivery_slot,
     items_json: JSON.stringify(items),

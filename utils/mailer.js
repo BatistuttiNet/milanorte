@@ -49,8 +49,8 @@ function buildOrderHTML(order, items) {
         <p><strong>Cliente:</strong> ${order.customer_name}</p>
         <p><strong>Teléfono:</strong> ${order.customer_phone}</p>
         ${order.customer_email ? `<p><strong>Email:</strong> ${order.customer_email}</p>` : ''}
-        <p><strong>Dirección:</strong> ${order.customer_address}</p>
-        <p><strong>Entrega:</strong> ${deliveryDay}${order.delivery_slot ? ' - ' + order.delivery_slot : ''}</p>
+        <p><strong>Dirección:</strong> ${order.customer_address}${order.address_extra ? ' (' + order.address_extra + ')' : ''}</p>
+        <p><strong>Entrega:</strong> ${deliveryDay}${order.delivery_slot ? ' - ' + (order.delivery_slot === 'manana' ? 'Mañana (9 a 12hs)' : order.delivery_slot === 'tarde' ? 'Tarde (13 a 17hs)' : 'Noche (18 a 20hs)') : ''}</p>
       </div>
     </div>
   `;

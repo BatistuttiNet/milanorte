@@ -51,7 +51,7 @@
 
   <!-- Products -->
   <h2 class="section-title">Nuestras milanesas</h2>
-  <p class="section-subtitle">Pedido mínimo: 2 kg por variedad</p>
+  <p class="section-subtitle">Pedido mínimo: 2 kg (combinando variedades)</p>
 
   <form id="order-form" action="/order" method="POST" data-free-shipping-threshold="<%= freeShippingThreshold %>" data-phone-verification="<%= phoneVerificationEnabled ? '1' : '0' %>">
     <div class="products">
@@ -60,7 +60,7 @@
           <img src="<%= p.image %>" alt="<%= p.title %>">
           <div class="product-info">
             <h3><%= p.title %></h3>
-            <p class="weight">Precio por kilo &middot; Mínimo <%= p.minKg %>kg</p>
+            <p class="weight">Precio por kilo</p>
             <p class="price"><%= formatPrice(p.pricePerKg) %> <span>/ kg</span></p>
             <div class="qty-selector">
               <button type="button" class="qty-btn" data-action="minus">&#8722;</button>
@@ -73,39 +73,6 @@
           </div>
         </div>
       <% }) %>
-    </div>
-
-    <div class="order-section">
-      <h2>Día de entrega</h2>
-      <p style="color: var(--gray); margin-bottom: 1rem; font-size: 0.9rem;">Hacemos envíos los miércoles y sábados</p>
-      <div class="delivery-options">
-        <div class="delivery-option">
-          <input type="radio" id="del-mier" name="delivery_day" value="miercoles">
-          <label for="del-mier">Miércoles</label>
-        </div>
-        <div class="delivery-option">
-          <input type="radio" id="del-sab" name="delivery_day" value="sabado">
-          <label for="del-sab">Sábado</label>
-        </div>
-      </div>
-
-      <div class="time-slots" id="time-slots" style="display: none;">
-        <p style="font-weight: 600; margin-bottom: 0.75rem;">Horario de entrega</p>
-        <div class="delivery-options">
-          <div class="delivery-option">
-            <input type="radio" id="slot-manana" name="delivery_slot" value="manana">
-            <label for="slot-manana">Mañana<span class="slot-time">10 a 13hs</span></label>
-          </div>
-          <div class="delivery-option">
-            <input type="radio" id="slot-tarde" name="delivery_slot" value="tarde">
-            <label for="slot-tarde">Tarde<span class="slot-time">13 a 18hs</span></label>
-          </div>
-          <div class="delivery-option">
-            <input type="radio" id="slot-noche" name="delivery_slot" value="noche">
-            <label for="slot-noche">Noche<span class="slot-time">18 a 20hs</span></label>
-          </div>
-        </div>
-      </div>
     </div>
 
     <div class="order-section">
@@ -139,16 +106,41 @@
         </div>
       </div>
       <div class="form-group">
-        <label for="email">Email (opcional)</label>
-        <input type="email" id="email" name="customer_email">
+        <label for="email">Email *</label>
+        <input type="email" id="email" name="customer_email" required>
       </div>
       <div class="form-group">
         <label for="address">Dirección de entrega *</label>
-        <input type="text" id="address" name="customer_address" required placeholder="Calle, número, piso, localidad" autocomplete="off">
+        <input type="text" id="address" name="customer_address" required placeholder="Calle y número, localidad" autocomplete="off">
         <input type="hidden" id="customer_lat" name="customer_lat" value="">
         <input type="hidden" id="customer_lng" name="customer_lng" value="">
         <div id="address-map" style="display: none; height: 200px; border-radius: 6px; margin-top: 0.5rem;"></div>
         <div id="shipping-info" style="display: none; margin-top: 0.5rem;"></div>
+      </div>
+      <div class="form-group">
+        <label for="address_extra">Piso / Depto / Timbre (opcional)</label>
+        <input type="text" id="address_extra" name="address_extra" placeholder="Ej: 3° B, timbre 12">
+      </div>
+
+      <div class="order-subsection" id="delivery-section" style="display: none; margin-top: 1.5rem;">
+        <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem;">Día de entrega</h3>
+        <p style="color: var(--gray); margin-bottom: 1rem; font-size: 0.9rem;">Hacemos envíos los miércoles y sábados</p>
+        <div class="delivery-options">
+          <div class="delivery-option">
+            <input type="radio" id="del-mier" name="delivery_day" value="miercoles">
+            <label for="del-mier">Miércoles</label>
+          </div>
+          <div class="delivery-option">
+            <input type="radio" id="del-sab" name="delivery_day" value="sabado">
+            <label for="del-sab">Sábado</label>
+          </div>
+        </div>
+
+        <div class="time-slots" id="time-slots" style="display: none;">
+          <p style="font-weight: 600; margin-bottom: 0.75rem;">Horario de entrega</p>
+          <div class="delivery-options" id="time-slots-options">
+          </div>
+        </div>
       </div>
 
       <p style="text-align: right; font-size: 1.4rem; font-weight: 600; margin-top: 1.5rem;">
