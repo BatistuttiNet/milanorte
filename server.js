@@ -29,13 +29,31 @@ const PRODUCTS = [
     settingsKey: 'price_nalga'
   },
   {
+    id: 'pollo',
+    title: 'Milanesas de Pollo',
+    description: 'Milanesas de pollo premium, rebozado casero crujiente',
+    pricePerKg: 28000,
+    minKg: 2,
+    image: '/images/pollo.svg',
+    settingsKey: 'price_pollo'
+  },
+  {
     id: 'bife-chorizo',
     title: 'Milanesas de Bife de Chorizo',
     description: 'Milanesas de bife de chorizo premium, corte grueso y tierno',
-    pricePerKg: 36000,
+    pricePerKg: 28000,
     minKg: 2,
     image: '/images/bife-chorizo.jpeg',
     settingsKey: 'price_bife_chorizo'
+  },
+  {
+    id: 'pelleto',
+    title: 'Milanesas de Pelleto',
+    description: 'Milanesas de pelleto premium, sabor intenso y tierno',
+    pricePerKg: 28000,
+    minKg: 2,
+    image: '/images/pelleto.svg',
+    settingsKey: 'price_pelleto'
   }
 ];
 

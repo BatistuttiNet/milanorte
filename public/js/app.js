@@ -93,9 +93,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Form validation
   function validateForm() {
-    const nalga = parseInt(document.querySelector('[name="qty_nalga"]')?.value) || 0;
-    const bife = parseInt(document.querySelector('[name="qty_bife"]')?.value) || 0;
-    const hasProducts = nalga > 0 || bife > 0;
+    let hasProducts = false;
+    document.querySelectorAll('.qty-input').forEach(input => {
+      if (parseInt(input.value) > 0) hasProducts = true;
+    });
     const hasDay = !!document.querySelector('[name="delivery_day"]:checked');
     const hasSlot = !!document.querySelector('[name="delivery_slot"]:checked');
     const phoneOk = !phoneVerificationEnabled || phoneVerified;
@@ -322,10 +323,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (orderForm) {
     orderForm.addEventListener('submit', (e) => {
-      const nalga = parseInt(document.querySelector('[name="qty_nalga"]').value) || 0;
-      const bife = parseInt(document.querySelector('[name="qty_bife"]').value) || 0;
+      let hasAny = false;
+      document.querySelectorAll('.qty-input').forEach(input => {
+        if (parseInt(input.value) > 0) hasAny = true;
+      });
 
-      if (nalga === 0 && bife === 0) {
+      if (!hasAny) {
         e.preventDefault();
         alert('Seleccioná al menos un producto');
         return;

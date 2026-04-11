@@ -123,13 +123,19 @@ router.post('/verify-code', (req, res) => {
 });
 
 router.post('/order', async (req, res) => {
-  const { qty_nalga, qty_bife, delivery_day, delivery_slot, customer_name, customer_phone, customer_email, customer_address, customer_lat, customer_lng } = req.body;
+  const { delivery_day, delivery_slot, customer_name, customer_phone, customer_email, customer_address, customer_lat, customer_lng } = req.body;
   const products = res.locals.products;
 
-  const qNalga = parseInt(qty_nalga) || 0;
-  const qBife = parseInt(qty_bife) || 0;
+  // Build items dynamically from all products
+  const items = [];
+  products.forEach(p => {
+    const qty = parseInt(req.body[`qty_${p.id}`]) || 0;
+    if (qty > 0) {
+      items.push({ product: p.title, quantity: qty, unit_price: p.pricePerKg, unit: 'kg' });
+    }
+  });
 
-  if (qNalga === 0 && qBife === 0) {
+  if (items.length === 0) {
     return res.redirect('/');
   }
 
@@ -152,14 +158,6 @@ router.post('/order', async (req, res) => {
     if (!hasOrder && !hasVerification) {
       return res.redirect('/');
     }
-  }
-
-  const items = [];
-  if (qNalga > 0) {
-    items.push({ product: products[0].title, quantity: qNalga, unit_price: products[0].pricePerKg, unit: 'kg' });
-  }
-  if (qBife > 0) {
-    items.push({ product: products[1].title, quantity: qBife, unit_price: products[1].pricePerKg, unit: 'kg' });
   }
 
   const productsTotal = items.reduce((sum, item) => sum + item.quantity * item.unit_price, 0);

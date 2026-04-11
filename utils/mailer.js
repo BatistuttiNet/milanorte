@@ -65,6 +65,7 @@ async function sendOrderNotification(order, items) {
       subject: `Nuevo pedido #${order.id} - ${order.customer_name}`,
       html: `<h2 style="color:#c9a84c">¡Nuevo pedido!</h2>${buildOrderHTML(order, items)}`
     });
+    console.log(`✅ Email de notificación enviado a ${process.env.NOTIFY_EMAIL} (pedido #${order.id})`);
   } catch (err) {
     console.error('Error enviando email al dueño:', err.message);
   }
@@ -84,6 +85,7 @@ async function sendOrderConfirmation(order, items) {
         <p style="color:#666;font-size:0.9em;margin-top:20px">Si tenés alguna consulta, respondé a este email.</p>
       `
     });
+    console.log(`✅ Email de confirmación enviado a ${order.customer_email} (pedido #${order.id})`);
   } catch (err) {
     console.error('Error enviando confirmación al cliente:', err.message);
   }
