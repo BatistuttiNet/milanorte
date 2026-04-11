@@ -447,7 +447,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (deliverySection) deliverySection.style.display = 'block';
     });
   }
-  if (window._gmCallbacks) window._gmCallbacks.push(initPlacesAutocomplete);
+  if (window.onGoogleMapsLoad) window.onGoogleMapsLoad(initPlacesAutocomplete);
 
   function calculateShipping(lat, lng) {
     const shippingInfo = document.getElementById('shipping-info');
