@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { listOrders, listOrdersByStatus, listOrdersByDelivery, getOrder, updateOrderStatus, getAllSettings, setSetting } = require('../db/init');
+const { sendTestEmail } = require('../utils/mailer');
 
 // Auth middleware
 function requireAdmin(req, res, next) {
@@ -63,7 +64,7 @@ router.get('/settings', requireAdmin, (req, res) => {
   const rows = getAllSettings.all();
   const settings = {};
   rows.forEach(r => { settings[r.key] = r.value; });
-  res.render('admin/settings', { settings, saved: req.query.saved === '1', pageTitle: 'Configuración' });
+  res.render('admin/settings', { settings, saved: req.query.saved === '1', test: req.query.test, testMsg: req.query.msg, pageTitle: 'Configuración' });
 });
 
 router.post('/settings', requireAdmin, (req, res) => {
@@ -76,6 +77,15 @@ router.post('/settings', requireAdmin, (req, res) => {
   // Checkbox: if unchecked, it's not sent in the form body
   setSetting.run('whatsapp_verification_enabled', req.body.whatsapp_verification_enabled ? '1' : '0');
   res.redirect('/admin/settings?saved=1');
+});
+
+router.post('/test-email', requireAdmin, async (req, res) => {
+  const result = await sendTestEmail();
+  if (result.ok) {
+    res.redirect('/admin/settings?test=ok');
+  } else {
+    res.redirect('/admin/settings?test=error&msg=' + encodeURIComponent(result.error));
+  }
 });
 
 module.exports = router;

@@ -13,6 +13,12 @@
   <% if (saved) { %>
     <div class="success-msg">Configuración guardada correctamente</div>
   <% } %>
+  <% if (typeof test !== 'undefined' && test === 'ok') { %>
+    <div class="success-msg">Email de prueba enviado correctamente</div>
+  <% } %>
+  <% if (typeof test !== 'undefined' && test === 'error') { %>
+    <div class="error-msg" style="background: #ffebee; color: #c62828; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">Error enviando email: <%= typeof testMsg !== 'undefined' ? testMsg : 'Error desconocido' %></div>
+  <% } %>
 
   <div class="order-section">
     <form action="/admin/settings" method="POST">
@@ -61,6 +67,14 @@
       </div>
 
       <button type="submit" class="btn btn-primary">Guardar configuración</button>
+    </form>
+  </div>
+
+  <div class="order-section" style="margin-top: 2rem;">
+    <h3 style="margin-bottom: 1rem;">Test de email</h3>
+    <p style="color: var(--gray); margin-bottom: 1rem; font-size: 0.9rem;">Envía un email de prueba a la dirección configurada en NOTIFY_EMAIL para verificar que la integración funciona.</p>
+    <form action="/admin/test-email" method="POST">
+      <button type="submit" class="btn btn-secondary">Enviar email de prueba</button>
     </form>
   </div>
 </div>

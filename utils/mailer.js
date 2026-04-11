@@ -91,4 +91,32 @@ async function sendOrderConfirmation(order, items) {
   }
 }
 
-module.exports = { sendOrderNotification, sendOrderConfirmation };
+async function sendTestEmail() {
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD || !process.env.NOTIFY_EMAIL) {
+    return { ok: false, error: 'Faltan variables de entorno: GMAIL_USER, GMAIL_APP_PASSWORD o NOTIFY_EMAIL' };
+  }
+  try {
+    await transporter.sendMail({
+      from: `"Milanorte" <${process.env.GMAIL_USER}>`,
+      to: process.env.NOTIFY_EMAIL,
+      subject: 'Test de email - Milanorte',
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
+          <div style="background:#1a1a2e;padding:20px;text-align:center">
+            <h1 style="color:#c9a84c;margin:0">Milanorte</h1>
+          </div>
+          <div style="padding:20px">
+            <h2 style="color:#333">Test de email exitoso</h2>
+            <p>Si estás leyendo esto, la configuración de email funciona correctamente.</p>
+            <p style="color:#666;font-size:0.9em">Enviado a: ${process.env.NOTIFY_EMAIL}</p>
+          </div>
+        </div>
+      `
+    });
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+}
+
+module.exports = { sendOrderNotification, sendOrderConfirmation, sendTestEmail };
