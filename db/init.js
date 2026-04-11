@@ -41,7 +41,7 @@ db.exec(`
   INSERT OR IGNORE INTO settings (key, value) VALUES ('price_nalga', '28000');
   INSERT OR IGNORE INTO settings (key, value) VALUES ('price_pollo', '28000');
   INSERT OR IGNORE INTO settings (key, value) VALUES ('price_bife_chorizo', '28000');
-  INSERT OR IGNORE INTO settings (key, value) VALUES ('price_pelleto', '28000');
+  INSERT OR IGNORE INTO settings (key, value) VALUES ('price_peceto', '28000');
   INSERT OR IGNORE INTO settings (key, value) VALUES ('shipping_rate_per_km', '250');
   INSERT OR IGNORE INTO settings (key, value) VALUES ('free_shipping_threshold', '150000');
   INSERT OR IGNORE INTO settings (key, value) VALUES ('whatsapp_verification_enabled', '0');

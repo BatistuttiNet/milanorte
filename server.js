@@ -47,13 +47,13 @@ const PRODUCTS = [
     settingsKey: 'price_bife_chorizo'
   },
   {
-    id: 'pelleto',
-    title: 'Milanesas de Pelleto',
-    description: 'Milanesas de pelleto premium, sabor intenso y tierno',
+    id: 'peceto',
+    title: 'Milanesas de Peceto',
+    description: 'Milanesas de peceto premium, sabor intenso y tierno',
     pricePerKg: 28000,
     minKg: 2,
     image: '/images/peceto.jpeg',
-    settingsKey: 'price_pelleto'
+    settingsKey: 'price_peceto'
   }
 ];
 
