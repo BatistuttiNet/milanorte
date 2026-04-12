@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { MercadoPagoConfig, Payment } = require('mercadopago');
 const { getOrder, updateOrderFromWebhook } = require('../db/init');
+const { sendOrderConfirmation } = require('../utils/mailer');
 
 const client = new MercadoPagoConfig({
   accessToken: process.env.MP_ACCESS_TOKEN
@@ -32,6 +33,13 @@ router.post('/mercadopago', async (req, res) => {
           mp_status: paymentData.status,
           status: newStatus
         });
+
+        // Send emails when payment is approved
+        if (paymentData.status === 'approved') {
+          const updatedOrder = getOrder.get(order.id);
+          const items = JSON.parse(updatedOrder.items_json);
+          sendOrderConfirmation(updatedOrder, items);
+        }
       }
     }
 

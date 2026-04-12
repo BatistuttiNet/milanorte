@@ -21,7 +21,7 @@
       </div>
       <div class="detail-item" style="grid-column: 1 / -1;">
         <label>Dirección</label>
-        <span><%= order.customer_address %></span>
+        <span><%= order.customer_address %><% if (order.address_extra) { %> (<%= order.address_extra %>)<% } %></span>
         <% if (order.customer_lat && order.customer_lng) { %>
           <div id="admin-map" style="height: 250px; border-radius: 6px; margin-top: 0.5rem; background: #eee;"></div>
           <small style="color: var(--gray);">Lat: <%= order.customer_lat.toFixed(4) %>, Lng: <%= order.customer_lng.toFixed(4) %></small>
@@ -29,7 +29,7 @@
       </div>
       <div class="detail-item">
         <label>Día de entrega</label>
-        <span><%= order.delivery_day === 'miercoles' ? 'Miércoles' : 'Sábado' %><% if (order.delivery_slot) { %> — <%= order.delivery_slot === 'manana' ? 'Mañana (10-13)' : order.delivery_slot === 'tarde' ? 'Tarde (13-18)' : 'Noche (18-20)' %><% } %></span>
+        <span><%= order.delivery_day === 'miercoles' ? 'Miércoles' : 'Sábado' %><% if (order.delivery_slot) { %> — <%= order.delivery_slot === 'manana' ? 'Mañana (9-12)' : order.delivery_slot === 'tarde' ? 'Tarde (13-17)' : 'Noche (18-20)' %><% } %></span>
       </div>
       <div class="detail-item">
         <label>Envío</label>

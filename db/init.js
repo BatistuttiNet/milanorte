@@ -41,7 +41,7 @@ db.exec(`
   INSERT OR IGNORE INTO settings (key, value) VALUES ('price_nalga', '28000');
   INSERT OR IGNORE INTO settings (key, value) VALUES ('price_pollo', '28000');
   INSERT OR IGNORE INTO settings (key, value) VALUES ('price_bife_chorizo', '28000');
-  INSERT OR IGNORE INTO settings (key, value) VALUES ('price_pelleto', '28000');
+  INSERT OR IGNORE INTO settings (key, value) VALUES ('price_peceto', '28000');
   INSERT OR IGNORE INTO settings (key, value) VALUES ('shipping_rate_per_km', '250');
   INSERT OR IGNORE INTO settings (key, value) VALUES ('free_shipping_threshold', '150000');
   INSERT OR IGNORE INTO settings (key, value) VALUES ('whatsapp_verification_enabled', '0');
@@ -65,6 +65,7 @@ const migrations = [
   'ALTER TABLE orders ADD COLUMN shipping_distance_km REAL DEFAULT 0',
   'ALTER TABLE orders ADD COLUMN customer_lat REAL',
   'ALTER TABLE orders ADD COLUMN customer_lng REAL',
+  'ALTER TABLE orders ADD COLUMN address_extra TEXT',
 ];
 for (const sql of migrations) {
   try { db.exec(sql); } catch (e) { /* column already exists */ }
@@ -79,8 +80,8 @@ const getAllSettings = db.prepare('SELECT * FROM settings');
 
 // Helpers
 const createOrder = db.prepare(`
-  INSERT INTO orders (customer_name, customer_phone, customer_email, customer_address, delivery_day, delivery_slot, items_json, total_amount, shipping_cost, shipping_distance_km, customer_lat, customer_lng)
-  VALUES (@customer_name, @customer_phone, @customer_email, @customer_address, @delivery_day, @delivery_slot, @items_json, @total_amount, @shipping_cost, @shipping_distance_km, @customer_lat, @customer_lng)
+  INSERT INTO orders (customer_name, customer_phone, customer_email, customer_address, address_extra, delivery_day, delivery_slot, items_json, total_amount, shipping_cost, shipping_distance_km, customer_lat, customer_lng)
+  VALUES (@customer_name, @customer_phone, @customer_email, @customer_address, @address_extra, @delivery_day, @delivery_slot, @items_json, @total_amount, @shipping_cost, @shipping_distance_km, @customer_lat, @customer_lng)
 `);
 
 const getOrder = db.prepare('SELECT * FROM orders WHERE id = ?');

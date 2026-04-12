@@ -13,6 +13,12 @@
   <% if (saved) { %>
     <div class="success-msg">Configuración guardada correctamente</div>
   <% } %>
+  <% if (typeof test !== 'undefined' && test === 'ok') { %>
+    <div class="success-msg">Email de prueba enviado correctamente</div>
+  <% } %>
+  <% if (typeof test !== 'undefined' && test === 'error') { %>
+    <div class="error-msg" style="background: #ffebee; color: #c62828; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">Error enviando email: <%= typeof testMsg !== 'undefined' ? testMsg : 'Error desconocido' %></div>
+  <% } %>
 
   <div class="order-section">
     <form action="/admin/settings" method="POST">
@@ -34,8 +40,8 @@
       </div>
 
       <div class="form-group">
-        <label for="price_pelleto">Milanesas de Pelleto ($/kg)</label>
-        <input type="number" id="price_pelleto" name="price_pelleto" value="<%= settings.price_pelleto || 28000 %>" min="0" step="100" required>
+        <label for="price_peceto">Milanesas de Peceto ($/kg)</label>
+        <input type="number" id="price_peceto" name="price_peceto" value="<%= settings.price_peceto || 28000 %>" min="0" step="100" required>
       </div>
 
       <h3 style="margin-top: 2rem; margin-bottom: 1.5rem;">Envío</h3>
@@ -50,6 +56,28 @@
         <input type="number" id="free_shipping_threshold" name="free_shipping_threshold" value="<%= settings.free_shipping_threshold || 150000 %>" min="0" step="1000" required>
       </div>
 
+      <h3 style="margin-top: 2rem; margin-bottom: 1.5rem;">Pagos</h3>
+
+      <div class="form-group">
+        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+          <input type="checkbox" name="mp_enabled" value="1" <%= settings.mp_enabled === '1' ? 'checked' : '' %> style="width: auto;">
+          Habilitar pago con MercadoPago
+        </label>
+        <small style="color: var(--gray);">Si está desactivado, se mostrará la opción de transferencia bancaria.</small>
+      </div>
+
+      <div class="form-group">
+        <label for="transfer_alias">Alias para transferencias</label>
+        <input type="text" id="transfer_alias" name="transfer_alias" value="<%= settings.transfer_alias || '' %>" placeholder="Ej: milanorte.mp">
+        <small style="color: var(--gray);">Se muestra al cliente cuando MercadoPago está desactivado.</small>
+      </div>
+
+      <div class="form-group">
+        <label for="payment_whatsapp">WhatsApp para comprobantes</label>
+        <input type="text" id="payment_whatsapp" name="payment_whatsapp" value="<%= settings.payment_whatsapp || '' %>" placeholder="Ej: 1155667788 (sin 0 ni 15)">
+        <small style="color: var(--gray);">El cliente envía el comprobante de transferencia a este número.</small>
+      </div>
+
       <h3 style="margin-top: 2rem; margin-bottom: 1.5rem;">WhatsApp</h3>
 
       <div class="form-group">
@@ -61,6 +89,14 @@
       </div>
 
       <button type="submit" class="btn btn-primary">Guardar configuración</button>
+    </form>
+  </div>
+
+  <div class="order-section" style="margin-top: 2rem;">
+    <h3 style="margin-bottom: 1rem;">Test de email</h3>
+    <p style="color: var(--gray); margin-bottom: 1rem; font-size: 0.9rem;">Envía un email de prueba a la dirección configurada en NOTIFY_EMAIL para verificar que la integración funciona.</p>
+    <form action="/admin/test-email" method="POST">
+      <button type="submit" class="btn btn-secondary">Enviar email de prueba</button>
     </form>
   </div>
 </div>

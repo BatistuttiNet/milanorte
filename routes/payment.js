@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { MercadoPagoConfig, Preference } = require('mercadopago');
 const { getOrder, updateOrderPayment, updateOrderPaymentFromRedirect } = require('../db/init');
+const { sendOrderConfirmation } = require('../utils/mailer');
 
 const client = new MercadoPagoConfig({
   accessToken: process.env.MP_ACCESS_TOKEN
@@ -70,6 +71,7 @@ router.get('/success', (req, res) => {
 
   // Capture payment_id from redirect as fallback (useful when webhook doesn't arrive)
   if (order && paymentId) {
+    const wasPending = order.status !== 'paid';
     const newStatus = mpStatus === 'approved' ? 'paid' : order.status;
     updateOrderPaymentFromRedirect.run({
       id: order.id,
@@ -77,6 +79,13 @@ router.get('/success', (req, res) => {
       mp_status: mpStatus || 'approved',
       status: newStatus
     });
+
+    // Send emails only if this redirect is what confirmed the payment (webhook didn't get it first)
+    if (mpStatus === 'approved' && wasPending) {
+      const updatedOrder = getOrder.get(order.id);
+      const items = JSON.parse(updatedOrder.items_json);
+      sendOrderConfirmation(updatedOrder, items);
+    }
   }
 
   res.render('success', {

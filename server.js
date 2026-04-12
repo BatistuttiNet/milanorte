@@ -25,7 +25,7 @@ const PRODUCTS = [
     description: 'Milanesas de nalga premium, rebozado casero crujiente',
     pricePerKg: 28000,
     minKg: 2,
-    image: '/images/nalga.svg',
+    image: '/images/nalga.jpeg',
     settingsKey: 'price_nalga'
   },
   {
@@ -34,7 +34,7 @@ const PRODUCTS = [
     description: 'Milanesas de pollo premium, rebozado casero crujiente',
     pricePerKg: 28000,
     minKg: 2,
-    image: '/images/pollo.svg',
+    image: '/images/pollo.jpeg',
     settingsKey: 'price_pollo'
   },
   {
@@ -47,13 +47,13 @@ const PRODUCTS = [
     settingsKey: 'price_bife_chorizo'
   },
   {
-    id: 'pelleto',
-    title: 'Milanesas de Pelleto',
-    description: 'Milanesas de pelleto premium, sabor intenso y tierno',
+    id: 'peceto',
+    title: 'Milanesas de Peceto',
+    description: 'Milanesas de peceto premium, sabor intenso y tierno',
     pricePerKg: 28000,
     minKg: 2,
-    image: '/images/pelleto.svg',
-    settingsKey: 'price_pelleto'
+    image: '/images/peceto.jpeg',
+    settingsKey: 'price_peceto'
   }
 ];
 
@@ -95,6 +95,13 @@ app.use((req, res, next) => {
 
   const waVerification = getSetting.get('whatsapp_verification_enabled');
   res.locals.phoneVerificationEnabled = waVerification && waVerification.value === '1';
+
+  const mpEnabled = getSetting.get('mp_enabled');
+  res.locals.mpEnabled = mpEnabled ? mpEnabled.value === '1' : true; // default enabled
+  const transferAlias = getSetting.get('transfer_alias');
+  res.locals.transferAlias = transferAlias ? transferAlias.value : '';
+  const paymentWhatsapp = getSetting.get('payment_whatsapp');
+  res.locals.paymentWhatsapp = paymentWhatsapp ? paymentWhatsapp.value : '';
 
   next();
 });
