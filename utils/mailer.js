@@ -1,30 +1,33 @@
-const nodemailer = require('nodemailer');
-
-const SMTP_HOST = process.env.SMTP_HOST;
-const SMTP_PORT = parseInt(process.env.SMTP_PORT || '587', 10);
-const SMTP_SECURE = process.env.SMTP_SECURE === 'true';
-const SMTP_USER = process.env.SMTP_USER;
-const SMTP_PASS = process.env.SMTP_PASS;
-const FROM_EMAIL = process.env.FROM_EMAIL || `Milanorte <${SMTP_USER}>`;
+const BREVO_API_KEY = process.env.BREVO_API_KEY;
+const FROM_EMAIL = process.env.FROM_EMAIL || 'milanorte@newsletter.milanorte.com';
+const FROM_NAME = process.env.FROM_NAME || 'Milanorte';
 const NOTIFY_EMAIL = process.env.NOTIFY_EMAIL;
 
 function isConfigured() {
-  return !!(SMTP_HOST && SMTP_USER && SMTP_PASS);
-}
-
-let transporter;
-if (isConfigured()) {
-  transporter = nodemailer.createTransport({
-    host: SMTP_HOST,
-    port: SMTP_PORT,
-    secure: SMTP_SECURE,
-    auth: { user: SMTP_USER, pass: SMTP_PASS }
-  });
+  return !!(BREVO_API_KEY);
 }
 
 async function sendEmail({ to, subject, html }) {
-  if (!transporter) return;
-  return transporter.sendMail({ from: FROM_EMAIL, to, subject, html });
+  if (!isConfigured()) return;
+  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      'api-key': BREVO_API_KEY,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    },
+    body: JSON.stringify({
+      sender: { name: FROM_NAME, email: FROM_EMAIL },
+      to: [{ email: to }],
+      subject,
+      htmlContent: html
+    })
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Brevo API error ${res.status}: ${body}`);
+  }
+  return res.json();
 }
 
 function formatPrice(amount) {
@@ -110,7 +113,7 @@ async function sendOrderConfirmation(order, items) {
 
 async function sendTestEmail() {
   if (!isConfigured() || !NOTIFY_EMAIL) {
-    return { ok: false, error: 'Faltan variables de entorno SMTP (SMTP_HOST, SMTP_USER, SMTP_PASS) o NOTIFY_EMAIL' };
+    return { ok: false, error: 'Faltan variables de entorno: BREVO_API_KEY o NOTIFY_EMAIL' };
   }
   try {
     await sendEmail({
