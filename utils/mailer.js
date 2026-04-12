@@ -1,12 +1,31 @@
 const nodemailer = require('nodemailer');
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASSWORD
-  }
-});
+const SMTP_HOST = process.env.SMTP_HOST;
+const SMTP_PORT = parseInt(process.env.SMTP_PORT || '587', 10);
+const SMTP_SECURE = process.env.SMTP_SECURE === 'true';
+const SMTP_USER = process.env.SMTP_USER;
+const SMTP_PASS = process.env.SMTP_PASS;
+const FROM_EMAIL = process.env.FROM_EMAIL || `Milanorte <${SMTP_USER}>`;
+const NOTIFY_EMAIL = process.env.NOTIFY_EMAIL;
+
+function isConfigured() {
+  return !!(SMTP_HOST && SMTP_USER && SMTP_PASS);
+}
+
+let transporter;
+if (isConfigured()) {
+  transporter = nodemailer.createTransport({
+    host: SMTP_HOST,
+    port: SMTP_PORT,
+    secure: SMTP_SECURE,
+    auth: { user: SMTP_USER, pass: SMTP_PASS }
+  });
+}
+
+async function sendEmail({ to, subject, html }) {
+  if (!transporter) return;
+  return transporter.sendMail({ from: FROM_EMAIL, to, subject, html });
+}
 
 function formatPrice(amount) {
   return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(amount);
@@ -49,33 +68,31 @@ function buildOrderHTML(order, items) {
         <p><strong>Cliente:</strong> ${order.customer_name}</p>
         <p><strong>Teléfono:</strong> ${order.customer_phone}</p>
         ${order.customer_email ? `<p><strong>Email:</strong> ${order.customer_email}</p>` : ''}
-        <p><strong>Dirección:</strong> ${order.customer_address}</p>
-        <p><strong>Entrega:</strong> ${deliveryDay}${order.delivery_slot ? ' - ' + order.delivery_slot : ''}</p>
+        <p><strong>Dirección:</strong> ${order.customer_address}${order.address_extra ? ' (' + order.address_extra + ')' : ''}</p>
+        <p><strong>Entrega:</strong> ${deliveryDay}${order.delivery_slot ? ' - ' + (order.delivery_slot === 'manana' ? 'Mañana (9 a 12hs)' : order.delivery_slot === 'tarde' ? 'Tarde (13 a 17hs)' : 'Noche (18 a 20hs)') : ''}</p>
       </div>
     </div>
   `;
 }
 
 async function sendOrderNotification(order, items) {
-  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD || !process.env.NOTIFY_EMAIL) return;
+  if (!isConfigured() || !NOTIFY_EMAIL) return;
   try {
-    await transporter.sendMail({
-      from: `"Milanorte" <${process.env.GMAIL_USER}>`,
-      to: process.env.NOTIFY_EMAIL,
+    await sendEmail({
+      to: NOTIFY_EMAIL,
       subject: `Nuevo pedido #${order.id} - ${order.customer_name}`,
       html: `<h2 style="color:#c9a84c">¡Nuevo pedido!</h2>${buildOrderHTML(order, items)}`
     });
-    console.log(`✅ Email de notificación enviado a ${process.env.NOTIFY_EMAIL} (pedido #${order.id})`);
+    console.log(`✅ Email de notificación enviado a ${NOTIFY_EMAIL} (pedido #${order.id})`);
   } catch (err) {
     console.error('Error enviando email al dueño:', err.message);
   }
 }
 
 async function sendOrderConfirmation(order, items) {
-  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD || !order.customer_email) return;
+  if (!isConfigured() || !order.customer_email) return;
   try {
-    await transporter.sendMail({
-      from: `"Milanorte" <${process.env.GMAIL_USER}>`,
+    await sendEmail({
       to: order.customer_email,
       subject: `Confirmación de pedido #${order.id} - Milanorte`,
       html: `
@@ -91,4 +108,31 @@ async function sendOrderConfirmation(order, items) {
   }
 }
 
-module.exports = { sendOrderNotification, sendOrderConfirmation };
+async function sendTestEmail() {
+  if (!isConfigured() || !NOTIFY_EMAIL) {
+    return { ok: false, error: 'Faltan variables de entorno SMTP (SMTP_HOST, SMTP_USER, SMTP_PASS) o NOTIFY_EMAIL' };
+  }
+  try {
+    await sendEmail({
+      to: NOTIFY_EMAIL,
+      subject: 'Test de email - Milanorte',
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
+          <div style="background:#1a1a2e;padding:20px;text-align:center">
+            <h1 style="color:#c9a84c;margin:0">Milanorte</h1>
+          </div>
+          <div style="padding:20px">
+            <h2 style="color:#333">Test de email exitoso</h2>
+            <p>Si estás leyendo esto, la configuración de email funciona correctamente.</p>
+            <p style="color:#666;font-size:0.9em">Enviado a: ${NOTIFY_EMAIL}</p>
+          </div>
+        </div>
+      `
+    });
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+}
+
+module.exports = { sendOrderNotification, sendOrderConfirmation, sendTestEmail };
