@@ -44,7 +44,7 @@
         <p><strong>Email:</strong> <%= order.customer_email %></p>
       <% } %>
       <p><strong>Dirección:</strong> <%= order.customer_address %><% if (order.address_extra) { %> (<%= order.address_extra %>)<% } %></p>
-      <p><strong>Entrega:</strong> <%= order.delivery_day === 'miercoles' ? 'Miércoles' : 'Sábado' %><% if (order.delivery_slot) { %> — <%= order.delivery_slot === 'manana' ? 'Mañana (9 a 12hs)' : order.delivery_slot === 'tarde' ? 'Tarde (13 a 17hs)' : 'Noche (18 a 20hs)' %><% } %></p>
+      <p><strong>Entrega a domicilio:</strong> <%= order.delivery_day === 'miercoles' ? 'Miércoles' : 'Sábado' %><% if (order.delivery_date) { %> <%= new Date(order.delivery_date + 'T12:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'long' }) %><% } %><% if (order.delivery_slot) { %> — <%= order.delivery_slot === 'manana' ? 'Mañana (9 a 12hs)' : order.delivery_slot === 'tarde' ? 'Tarde (13 a 17hs)' : 'Noche (18 a 20hs)' %><% } %></p>
     </div>
 
     <% if (mpEnabled) { %>

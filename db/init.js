@@ -66,6 +66,7 @@ const migrations = [
   'ALTER TABLE orders ADD COLUMN customer_lat REAL',
   'ALTER TABLE orders ADD COLUMN customer_lng REAL',
   'ALTER TABLE orders ADD COLUMN address_extra TEXT',
+  'ALTER TABLE orders ADD COLUMN delivery_date TEXT',
 ];
 for (const sql of migrations) {
   try { db.exec(sql); } catch (e) { /* column already exists */ }
@@ -80,8 +81,8 @@ const getAllSettings = db.prepare('SELECT * FROM settings');
 
 // Helpers
 const createOrder = db.prepare(`
-  INSERT INTO orders (customer_name, customer_phone, customer_email, customer_address, address_extra, delivery_day, delivery_slot, items_json, total_amount, shipping_cost, shipping_distance_km, customer_lat, customer_lng)
-  VALUES (@customer_name, @customer_phone, @customer_email, @customer_address, @address_extra, @delivery_day, @delivery_slot, @items_json, @total_amount, @shipping_cost, @shipping_distance_km, @customer_lat, @customer_lng)
+  INSERT INTO orders (customer_name, customer_phone, customer_email, customer_address, address_extra, delivery_day, delivery_slot, delivery_date, items_json, total_amount, shipping_cost, shipping_distance_km, customer_lat, customer_lng)
+  VALUES (@customer_name, @customer_phone, @customer_email, @customer_address, @address_extra, @delivery_day, @delivery_slot, @delivery_date, @items_json, @total_amount, @shipping_cost, @shipping_distance_km, @customer_lat, @customer_lng)
 `);
 
 const getOrder = db.prepare('SELECT * FROM orders WHERE id = ?');

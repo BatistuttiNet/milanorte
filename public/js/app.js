@@ -85,33 +85,73 @@ document.addEventListener('DOMContentLoaded', () => {
     ]
   };
 
-  // Show time slots when delivery day is selected
-  const dayRadios = document.querySelectorAll('[name="delivery_day"]');
+  // Calculate next 2 available delivery dates (Wed=3, Sat=6) with 24h cutoff
+  function getNextDeliveryDates() {
+    const now = new Date();
+    const deliveryDays = [3, 6]; // Wednesday, Saturday
+    const dates = [];
+    const dayNames = { 3: 'miercoles', 6: 'sabado' };
+    const dayLabels = { 3: 'Miércoles', 6: 'Sábado' };
+    const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+
+    for (let i = 1; i <= 14 && dates.length < 2; i++) {
+      const candidate = new Date(now);
+      candidate.setDate(now.getDate() + i);
+      const dow = candidate.getDay();
+      if (!deliveryDays.includes(dow)) continue;
+
+      // 24h cutoff: must be at least 24h from now
+      const diffMs = candidate.setHours(0,0,0,0) - now.getTime();
+      if (diffMs < 24 * 60 * 60 * 1000) continue;
+
+      dates.push({
+        value: dayNames[dow],
+        label: dayLabels[dow],
+        dateStr: candidate.getDate() + '/' + (candidate.getMonth() + 1),
+        dateLong: candidate.getDate() + ' de ' + months[candidate.getMonth()],
+        dateISO: candidate.toISOString().slice(0, 10)
+      });
+    }
+    return dates;
+  }
+
+  // Populate delivery day options with real dates
+  const deliveryDayContainer = document.getElementById('delivery-day-options');
   const timeSlotsDiv = document.getElementById('time-slots');
   const timeSlotsOptions = document.getElementById('time-slots-options');
-  dayRadios.forEach(radio => {
-    radio.addEventListener('change', () => {
-      const slots = slotsByDay[radio.value] || [];
-      timeSlotsOptions.innerHTML = slots.map(s => `
-        <div class="delivery-option">
-          <input type="radio" id="slot-${s.value}" name="delivery_slot" value="${s.value}">
-          <label for="slot-${s.value}">${s.label}<span class="slot-time">${s.time}</span></label>
-        </div>
-      `).join('');
-      // Re-bind slot radios for validation
-      timeSlotsOptions.querySelectorAll('[name="delivery_slot"]').forEach(r => {
-        r.addEventListener('change', validateForm);
-      });
-      if (timeSlotsDiv) timeSlotsDiv.style.display = 'block';
-      validateForm();
-    });
-  });
 
-  // Time slot change
-  const slotRadios = document.querySelectorAll('[name="delivery_slot"]');
-  slotRadios.forEach(radio => {
-    radio.addEventListener('change', validateForm);
-  });
+  function renderDeliveryDays() {
+    const dates = getNextDeliveryDates();
+    if (!deliveryDayContainer) return;
+    deliveryDayContainer.innerHTML = dates.map((d, i) => `
+      <div class="delivery-option">
+        <input type="radio" id="del-${i}" name="delivery_day" value="${d.value}" data-date="${d.dateISO}">
+        <label for="del-${i}">${d.label}<span class="delivery-date">${d.dateLong}</span></label>
+      </div>
+    `).join('');
+
+    // Bind change events
+    deliveryDayContainer.querySelectorAll('[name="delivery_day"]').forEach(radio => {
+      radio.addEventListener('change', () => {
+        // Set hidden delivery_date field
+        const dateInput = document.getElementById('delivery_date');
+        if (dateInput) dateInput.value = radio.dataset.date;
+        const slots = slotsByDay[radio.value] || [];
+        timeSlotsOptions.innerHTML = slots.map(s => `
+          <div class="delivery-option">
+            <input type="radio" id="slot-${s.value}" name="delivery_slot" value="${s.value}">
+            <label for="slot-${s.value}">${s.label}<span class="slot-time">${s.time}</span></label>
+          </div>
+        `).join('');
+        timeSlotsOptions.querySelectorAll('[name="delivery_slot"]').forEach(r => {
+          r.addEventListener('change', validateForm);
+        });
+        if (timeSlotsDiv) timeSlotsDiv.style.display = 'block';
+        validateForm();
+      });
+    });
+  }
+  renderDeliveryDays();
 
   // Form validation
   function validateForm() {
@@ -443,8 +483,7 @@ document.addEventListener('DOMContentLoaded', () => {
       calculateShipping(lat, lng);
 
       // Show delivery day/slot section
-      const deliverySection = document.getElementById('delivery-section');
-      if (deliverySection) deliverySection.style.display = 'block';
+      // Delivery section is always visible now (no need to show/hide)
     });
   }
   if (window.onGoogleMapsLoad) window.onGoogleMapsLoad(initPlacesAutocomplete);

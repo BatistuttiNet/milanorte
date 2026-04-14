@@ -123,7 +123,7 @@ router.post('/verify-code', (req, res) => {
 });
 
 router.post('/order', async (req, res) => {
-  const { delivery_day, delivery_slot, customer_name, customer_phone, customer_email, customer_address, address_extra, customer_lat, customer_lng } = req.body;
+  const { delivery_day, delivery_slot, delivery_date, customer_name, customer_phone, customer_email, customer_address, address_extra, customer_lat, customer_lng } = req.body;
   const products = res.locals.products;
 
   // Build items dynamically from all products
@@ -193,6 +193,7 @@ router.post('/order', async (req, res) => {
     address_extra: address_extra || null,
     delivery_day,
     delivery_slot,
+    delivery_date: delivery_date || null,
     items_json: JSON.stringify(items),
     total_amount: total,
     shipping_cost: shippingCost,

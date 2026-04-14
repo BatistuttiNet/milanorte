@@ -118,25 +118,19 @@
         <div id="shipping-info" style="display: none; margin-top: 0.5rem;"></div>
       </div>
       <div class="form-group">
-        <label for="address_extra">Piso / Depto / Timbre (opcional)</label>
+        <label for="address_extra">Piso / Depto / Timbre <small style="color: var(--gray);">(importante en edificios)</small></label>
         <input type="text" id="address_extra" name="address_extra" placeholder="Ej: 3° B, timbre 12">
       </div>
 
-      <div class="order-subsection" id="delivery-section" style="display: none; margin-top: 1.5rem;">
-        <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem;">Día de entrega</h3>
-        <p style="color: var(--gray); margin-bottom: 1rem; font-size: 0.9rem;">Hacemos envíos los miércoles y sábados</p>
-        <div class="delivery-options">
-          <div class="delivery-option">
-            <input type="radio" id="del-mier" name="delivery_day" value="miercoles">
-            <label for="del-mier">Miércoles</label>
-          </div>
-          <div class="delivery-option">
-            <input type="radio" id="del-sab" name="delivery_day" value="sabado">
-            <label for="del-sab">Sábado</label>
-          </div>
+      <div class="order-subsection" id="delivery-section" style="margin-top: 1.5rem;">
+        <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem;">Entrega a domicilio</h3>
+        <p style="color: var(--gray); margin-bottom: 1rem; font-size: 0.9rem;">Hacemos envíos los miércoles y sábados. Elegí tu próxima fecha de entrega.</p>
+        <input type="hidden" id="delivery_date" name="delivery_date" value="">
+        <div class="delivery-options" id="delivery-day-options">
+          <!-- Populated dynamically by app.js with next 2 available dates -->
         </div>
 
-        <div class="time-slots" id="time-slots" style="display: none;">
+        <div class="time-slots" id="time-slots" style="display: none; margin-top: 1.25rem;">
           <p style="font-weight: 600; margin-bottom: 0.75rem;">Horario de entrega</p>
           <div class="delivery-options" id="time-slots-options">
           </div>
