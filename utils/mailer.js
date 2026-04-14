@@ -1,20 +1,31 @@
-const RESEND_API_KEY = process.env.RESEND_API_KEY;
-const FROM_EMAIL = process.env.FROM_EMAIL || 'Milanorte <onboarding@resend.dev>';
+const BREVO_API_KEY = process.env.BREVO_API_KEY;
+const FROM_EMAIL = process.env.FROM_EMAIL || 'milanorte@newsletter.milanorte.com';
+const FROM_NAME = process.env.FROM_NAME || 'Milanorte';
 const NOTIFY_EMAIL = process.env.NOTIFY_EMAIL;
 
+function isConfigured() {
+  return !!(BREVO_API_KEY);
+}
+
 async function sendEmail({ to, subject, html }) {
-  if (!RESEND_API_KEY) return;
-  const res = await fetch('https://api.resend.com/emails', {
+  if (!isConfigured()) return;
+  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${RESEND_API_KEY}`,
-      'Content-Type': 'application/json'
+      'api-key': BREVO_API_KEY,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
     },
-    body: JSON.stringify({ from: FROM_EMAIL, to, subject, html })
+    body: JSON.stringify({
+      sender: { name: FROM_NAME, email: FROM_EMAIL },
+      to: [{ email: to }],
+      subject,
+      htmlContent: html
+    })
   });
   if (!res.ok) {
     const body = await res.text();
-    throw new Error(`Resend API error ${res.status}: ${body}`);
+    throw new Error(`Brevo API error ${res.status}: ${body}`);
   }
   return res.json();
 }
@@ -68,7 +79,7 @@ function buildOrderHTML(order, items) {
 }
 
 async function sendOrderNotification(order, items) {
-  if (!RESEND_API_KEY || !NOTIFY_EMAIL) return;
+  if (!isConfigured() || !NOTIFY_EMAIL) return;
   try {
     await sendEmail({
       to: NOTIFY_EMAIL,
@@ -82,7 +93,7 @@ async function sendOrderNotification(order, items) {
 }
 
 async function sendOrderConfirmation(order, items) {
-  if (!RESEND_API_KEY || !order.customer_email) return;
+  if (!isConfigured() || !order.customer_email) return;
   try {
     await sendEmail({
       to: order.customer_email,
@@ -101,8 +112,8 @@ async function sendOrderConfirmation(order, items) {
 }
 
 async function sendTestEmail() {
-  if (!RESEND_API_KEY || !NOTIFY_EMAIL) {
-    return { ok: false, error: 'Faltan variables de entorno: RESEND_API_KEY o NOTIFY_EMAIL' };
+  if (!isConfigured() || !NOTIFY_EMAIL) {
+    return { ok: false, error: 'Faltan variables de entorno: BREVO_API_KEY o NOTIFY_EMAIL' };
   }
   try {
     await sendEmail({
