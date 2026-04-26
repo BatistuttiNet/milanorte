@@ -105,6 +105,20 @@ footer p { font-size: 0.9rem; }
   letter-spacing: 0.5px;
 }
 
+.hero-shipping {
+  display: inline-block;
+  margin-top: 1.5rem;
+  padding: 0.55rem 1.25rem;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  color: var(--white);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  backdrop-filter: blur(4px);
+}
+
 /* === Container === */
 .container {
   max-width: 900px;
@@ -191,7 +205,7 @@ footer p { font-size: 0.9rem; }
 .section-title {
   text-align: center;
   font-size: 1.8rem;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
 }
 
 .section-subtitle {
@@ -248,18 +262,21 @@ footer p { font-size: 0.9rem; }
 
 .zona-badge-wrap {
   text-align: center;
-  margin-bottom: 1rem;
+  margin: 1rem 0 2rem;
 }
 
 .zona-badge {
-  display: inline-block;
-  background: var(--cream);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--white);
   color: var(--black);
   border: 1px solid var(--gray-border);
-  padding: 0.5rem 1rem;
+  padding: 0.55rem 1.1rem;
   border-radius: 999px;
   font-size: 0.95rem;
-  font-weight: 500;
+  font-weight: 600;
+  box-shadow: var(--shadow);
 }
 
 .product-card:hover {
