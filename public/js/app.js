@@ -1,11 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
-  let shippingCost = 0;
-  let shippingCostRaw = 0; // before free shipping check
-  let shippingDistanceKm = 0;
   const orderForm = document.getElementById('order-form');
-  const freeShippingThreshold = orderForm ? parseFloat(orderForm.dataset.freeShippingThreshold) || 0 : 0;
   const phoneVerificationEnabled = orderForm && orderForm.dataset.phoneVerification === '1';
   let phoneVerified = false;
+  let discountPercent = 0;
 
   // Quantity selectors (kg-based, 1kg steps)
   document.querySelectorAll('.qty-btn').forEach(btn => {
@@ -32,45 +29,100 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Update total and subtotals
   function updateTotal() {
-    let productsTotal = 0;
+    let subtotal = 0;
     document.querySelectorAll('.product-card').forEach(card => {
       const qty = parseInt(card.querySelector('.qty-input').value) || 0;
       const pricePerKg = parseFloat(card.dataset.pricePerKg) || 0;
-      const subtotal = qty * pricePerKg;
-      productsTotal += subtotal;
+      const lineSub = qty * pricePerKg;
+      subtotal += lineSub;
 
       const subEl = card.querySelector('.product-subtotal');
       if (subEl) {
-        subEl.textContent = qty > 0 ? qty + 'kg = ' + formatPrice(subtotal) : '';
+        subEl.textContent = qty > 0 ? qty + 'kg = ' + formatPrice(lineSub) : '';
       }
     });
 
-    // Free shipping if products total exceeds threshold
-    if (freeShippingThreshold > 0 && productsTotal >= freeShippingThreshold) {
-      shippingCost = 0;
-    } else {
-      shippingCost = shippingCostRaw;
-    }
+    const discountAmount = Math.round(subtotal * discountPercent / 100);
+    const total = subtotal - discountAmount;
 
-    // Update shipping display
-    const shippingInfo = document.getElementById('shipping-info');
-    if (shippingInfo && shippingInfo.style.display !== 'none' && shippingDistanceKm > 0) {
-      if (shippingCost === 0 && shippingCostRaw > 0) {
-        shippingInfo.innerHTML =
-          '<span class="shipping-cost" style="color: green;">Envío gratis</span>' +
-          '<span class="shipping-distance"> (' + shippingDistanceKm + ' km)</span>';
-      } else if (shippingCostRaw > 0) {
-        shippingInfo.innerHTML =
-          '<span class="shipping-cost">Envío: ' + formatPrice(shippingCostRaw) + '</span>' +
-          '<span class="shipping-distance"> (' + shippingDistanceKm + ' km)</span>';
-      }
-    }
-
-    const total = productsTotal + shippingCost;
+    const subtotalRow = document.getElementById('subtotal-row');
+    const discountRow = document.getElementById('discount-row');
+    const subtotalEl = document.getElementById('order-subtotal');
+    const discountEl = document.getElementById('order-discount');
+    const discountLabel = document.getElementById('discount-label');
     const totalEl = document.getElementById('order-total');
+
+    if (discountPercent > 0 && subtotal > 0) {
+      if (subtotalRow) subtotalRow.style.display = 'block';
+      if (discountRow) discountRow.style.display = 'block';
+      if (subtotalEl) subtotalEl.textContent = formatPrice(subtotal);
+      if (discountEl) discountEl.textContent = '-' + formatPrice(discountAmount);
+      if (discountLabel) discountLabel.textContent = '-' + discountPercent + '%';
+    } else {
+      if (subtotalRow) subtotalRow.style.display = 'none';
+      if (discountRow) discountRow.style.display = 'none';
+    }
+
     if (totalEl) totalEl.textContent = formatPrice(total);
 
     validateForm();
+  }
+
+  // Discount code apply
+  const btnApplyDiscount = document.getElementById('btn-apply-discount');
+  const discountInput = document.getElementById('discount_code');
+  const discountMsg = document.getElementById('discount-msg');
+  if (btnApplyDiscount && discountInput) {
+    btnApplyDiscount.addEventListener('click', () => {
+      const code = discountInput.value.trim();
+      if (!code) {
+        discountPercent = 0;
+        discountMsg.style.display = 'none';
+        updateTotal();
+        return;
+      }
+      btnApplyDiscount.disabled = true;
+      fetch('/validate-discount', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      })
+        .then(r => r.json())
+        .then(data => {
+          btnApplyDiscount.disabled = false;
+          if (data.valid) {
+            discountPercent = parseFloat(data.percent) || 0;
+            discountMsg.textContent = '✓ Descuento de ' + discountPercent + '% aplicado';
+            discountMsg.style.color = 'var(--green, #2E7D32)';
+            discountMsg.style.display = 'block';
+            discountInput.style.borderColor = '#2E7D32';
+          } else {
+            discountPercent = 0;
+            discountMsg.textContent = data.error || 'Código inválido';
+            discountMsg.style.color = '#c62828';
+            discountMsg.style.display = 'block';
+            discountInput.style.borderColor = '#c62828';
+          }
+          updateTotal();
+        })
+        .catch(() => {
+          btnApplyDiscount.disabled = false;
+          discountPercent = 0;
+          discountMsg.textContent = 'Error al validar el código';
+          discountMsg.style.color = '#c62828';
+          discountMsg.style.display = 'block';
+          updateTotal();
+        });
+    });
+    // Reset discount if user changes the code
+    discountInput.addEventListener('input', () => {
+      if (discountPercent > 0) {
+        discountPercent = 0;
+        discountMsg.style.display = 'none';
+        discountInput.style.borderColor = '';
+        updateTotal();
+      }
+    });
   }
 
   // Time slots per delivery day
@@ -159,21 +211,19 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.qty-input').forEach(input => {
       totalKg += parseInt(input.value) || 0;
     });
-    const hasMinKg = totalKg >= 2;
+    const hasItems = totalKg > 0;
     const hasDay = !!document.querySelector('[name="delivery_day"]:checked');
     const hasSlot = !!document.querySelector('[name="delivery_slot"]:checked');
     const phoneOk = !phoneVerificationEnabled || phoneVerified;
 
     const submitBtn = document.getElementById('submit-order');
-    const canSubmit = hasMinKg && hasDay && hasSlot && phoneOk;
+    const canSubmit = hasItems && hasDay && hasSlot && phoneOk;
     if (submitBtn) submitBtn.disabled = !canSubmit;
 
-    // Show hint about what's missing
     const hint = document.getElementById('submit-hint');
     if (hint) {
       const missing = [];
-      if (totalKg === 0) missing.push('Seleccioná al menos un producto');
-      else if (!hasMinKg) missing.push('El pedido mínimo es de 2 kg en total');
+      if (!hasItems) missing.push('Seleccioná al menos un producto');
       if (!hasDay) missing.push('Elegí un día de entrega');
       if (!hasSlot && hasDay) missing.push('Elegí un horario de entrega');
       if (!phoneOk) missing.push('Verificá tu teléfono por WhatsApp');
@@ -204,13 +254,11 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         phoneError.style.display = 'none';
       }
-      // Reset verification when phone changes
       if (phoneVerificationEnabled && phoneVerified) {
         phoneVerified = false;
         resetVerificationUI();
         validateForm();
       }
-      // Show verify button when phone is valid
       if (phoneVerificationEnabled && !err && digits.length === 10) {
         showVerifySection(digits);
       } else if (phoneVerificationEnabled) {
@@ -257,7 +305,6 @@ document.addEventListener('DOMContentLoaded', () => {
     verifySection.style.display = 'block';
     verifyMsg.style.display = 'block';
 
-    // First check if this is a returning customer
     fetch('/check-phone', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -375,7 +422,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Auto-check phone on blur if verification enabled
   if (phoneInput && phoneVerificationEnabled) {
     phoneInput.addEventListener('blur', () => {
       const digits = normalizePhone(phoneInput.value);
@@ -412,7 +458,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      // Validate phone
       const phoneVal = document.getElementById('phone');
       if (phoneVal) {
         const phoneDigits = normalizePhone(phoneVal.value);
@@ -423,10 +468,9 @@ document.addEventListener('DOMContentLoaded', () => {
           phoneVal.focus();
           return;
         }
-        phoneVal.value = phoneDigits; // normalize before submit
+        phoneVal.value = phoneDigits;
       }
 
-      // Check phone verification
       if (phoneVerificationEnabled && !phoneVerified) {
         e.preventDefault();
         alert('Verificá tu teléfono por WhatsApp antes de hacer el pedido');
@@ -437,13 +481,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const lat = document.getElementById('customer_lat')?.value;
       if (!lat) {
         e.preventDefault();
-        alert('Seleccioná tu dirección de la lista de sugerencias para calcular el envío');
+        alert('Seleccioná tu dirección de la lista de sugerencias');
         return;
       }
     });
   }
 
-  // Google Maps Autocomplete
+  // Google Maps Autocomplete (for address validation, not shipping)
   function initPlacesAutocomplete() {
     const addressInput = document.getElementById('address');
     if (!addressInput) return;
@@ -467,7 +511,6 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('customer_lat').value = lat;
       document.getElementById('customer_lng').value = lng;
 
-      // Show map
       const mapDiv = document.getElementById('address-map');
       mapDiv.style.display = 'block';
 
@@ -479,64 +522,10 @@ document.addEventListener('DOMContentLoaded', () => {
         marker.setPosition({ lat, lng });
       }
 
-      // Calculate shipping
-      calculateShipping(lat, lng);
-
-      // Show delivery day/slot section
       // Delivery section is always visible now (no need to show/hide)
     });
   }
   if (window.onGoogleMapsLoad) window.onGoogleMapsLoad(initPlacesAutocomplete);
-
-  function calculateShipping(lat, lng) {
-    const shippingInfo = document.getElementById('shipping-info');
-    shippingInfo.style.display = 'block';
-    shippingInfo.innerHTML = '<span class="shipping-distance">Calculando envío...</span>';
-
-    const service = new google.maps.DistanceMatrixService();
-    service.getDistanceMatrix({
-      origins: [new google.maps.LatLng(-34.4265, -58.5756)], // La Rioja 1346, Tigre (approx)
-      destinations: [new google.maps.LatLng(lat, lng)],
-      travelMode: google.maps.TravelMode.DRIVING
-    }, function(response, status) {
-      if (status !== 'OK' || !response.rows[0]?.elements[0]?.distance) {
-        shippingInfo.innerHTML = '<span class="shipping-distance">No se pudo calcular el envío. Verificá tu dirección.</span>';
-        shippingCost = 0;
-        updateTotal();
-        return;
-      }
-
-      const distanceKm = Math.round(response.rows[0].elements[0].distance.value / 1000);
-
-      // Get shipping rate from server
-      fetch('/calculate-shipping', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ distance_km: distanceKm })
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.error) {
-          shippingInfo.innerHTML = '<span class="shipping-distance">Error al calcular el envío</span>';
-          shippingCostRaw = 0;
-          shippingCost = 0;
-          shippingDistanceKm = 0;
-        } else {
-          shippingCostRaw = data.shipping_cost;
-          shippingCost = data.shipping_cost;
-          shippingDistanceKm = distanceKm;
-        }
-        updateTotal();
-      })
-      .catch(() => {
-        shippingInfo.innerHTML = '<span class="shipping-distance">Error al calcular el envío</span>';
-        shippingCostRaw = 0;
-        shippingCost = 0;
-        shippingDistanceKm = 0;
-        updateTotal();
-      });
-    });
-  }
 
   updateTotal();
 });

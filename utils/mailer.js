@@ -46,6 +46,7 @@ function buildItemsHTML(items) {
 
 function buildOrderHTML(order, items) {
   const deliveryDay = order.delivery_day === 'miercoles' ? 'Miércoles' : 'Sábado';
+  const hasDiscount = order.discount_amount && order.discount_amount > 0;
   return `
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
       <div style="background:#1a1a2e;padding:20px;text-align:center">
@@ -65,13 +66,17 @@ function buildOrderHTML(order, items) {
             ${buildItemsHTML(items)}
           </tbody>
         </table>
-        ${order.shipping_cost > 0 ? `<p>Envío (${order.shipping_distance_km} km): <strong>${formatPrice(order.shipping_cost)}</strong></p>` : '<p>Envío: <strong>Gratis</strong></p>'}
-        <p style="font-size:1.2em">Total: <strong>${formatPrice(order.total_amount)}</strong></p>
+        ${hasDiscount ? `
+          <p style="text-align:right;color:#666;margin:0">Subtotal: ${formatPrice(order.subtotal_amount)}</p>
+          <p style="text-align:right;color:#2E7D32;margin:0">Descuento (${order.discount_code} -${order.discount_percent}%): -${formatPrice(order.discount_amount)}</p>
+        ` : ''}
+        <p style="font-size:1.2em;text-align:right">Total: <strong>${formatPrice(order.total_amount)}</strong></p>
         <hr style="border:none;border-top:1px solid #eee;margin:15px 0">
         <p><strong>Cliente:</strong> ${order.customer_name}</p>
         <p><strong>Teléfono:</strong> ${order.customer_phone}</p>
         ${order.customer_email ? `<p><strong>Email:</strong> ${order.customer_email}</p>` : ''}
         <p><strong>Dirección:</strong> ${order.customer_address}${order.address_extra ? ' (' + order.address_extra + ')' : ''}</p>
+        <p><strong>Zona de envío:</strong> Zona Norte</p>
         <p><strong>Entrega:</strong> ${deliveryDay}${order.delivery_slot ? ' - ' + (order.delivery_slot === 'manana' ? 'Mañana (9 a 12hs)' : order.delivery_slot === 'tarde' ? 'Tarde (13 a 17hs)' : 'Noche (18 a 20hs)') : ''}</p>
       </div>
     </div>

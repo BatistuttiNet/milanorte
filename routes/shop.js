@@ -4,33 +4,29 @@ const { createOrder, getOrder, getSetting, findOrderByPhone, createVerification,
 const fetch = require('node-fetch');
 const { sendOrderNotification } = require('../utils/mailer');
 
-// La Rioja 1346, Tigre coordinates (hidden from client)
-const ORIGIN_LAT = -34.4265;
-const ORIGIN_LNG = -58.5756;
-
-function haversineKm(lat1, lon1, lat2, lon2) {
-  const R = 6371;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
-
 router.get('/', (req, res) => {
   res.render('index', { products: res.locals.products });
 });
 
-// Calculate shipping cost from distance (client sends distance_km from browser Distance Matrix)
-router.post('/calculate-shipping', (req, res) => {
-  const { distance_km } = req.body;
-  if (!distance_km || distance_km <= 0) return res.json({ error: 'Distancia inválida' });
+// Validate discount code (used by client to preview discount before submitting)
+router.post('/validate-discount', (req, res) => {
+  const { code } = req.body;
+  if (!code) return res.json({ valid: false });
 
-  const roundedKm = Math.round(distance_km); // Sin decimales
-  const rateRow = getSetting.get('shipping_rate_per_km');
-  const rate = rateRow ? parseFloat(rateRow.value) : 250;
-  const shippingCost = Math.round(roundedKm * rate);
+  const codeRow = getSetting.get('discount_code');
+  const percentRow = getSetting.get('discount_percent');
+  const configuredCode = codeRow ? codeRow.value.trim() : '';
+  const configuredPercent = percentRow ? parseFloat(percentRow.value) : 0;
 
-  res.json({ distance_km: roundedKm, shipping_cost: shippingCost });
+  if (!configuredCode || configuredPercent <= 0) {
+    return res.json({ valid: false, error: 'No hay descuentos disponibles' });
+  }
+
+  if (code.trim().toUpperCase() !== configuredCode.toUpperCase()) {
+    return res.json({ valid: false, error: 'Código inválido' });
+  }
+
+  res.json({ valid: true, percent: configuredPercent });
 });
 
 // Check if phone already has a previous order (returning customer)
@@ -123,7 +119,7 @@ router.post('/verify-code', (req, res) => {
 });
 
 router.post('/order', async (req, res) => {
-  const { delivery_day, delivery_slot, delivery_date, customer_name, customer_phone, customer_email, customer_address, address_extra, customer_lat, customer_lng } = req.body;
+  const { delivery_day, delivery_slot, delivery_date, customer_name, customer_phone, customer_email, customer_address, address_extra, customer_lat, customer_lng, discount_code } = req.body;
   const products = res.locals.products;
 
   // Build items dynamically from all products
@@ -135,8 +131,7 @@ router.post('/order', async (req, res) => {
     }
   });
 
-  const totalKg = items.reduce((sum, item) => sum + item.quantity, 0);
-  if (items.length === 0 || totalKg < 2) {
+  if (items.length === 0) {
     return res.redirect('/');
   }
 
@@ -161,29 +156,28 @@ router.post('/order', async (req, res) => {
     }
   }
 
-  const productsTotal = items.reduce((sum, item) => sum + item.quantity * item.unit_price, 0);
+  const subtotal = items.reduce((sum, item) => sum + item.quantity * item.unit_price, 0);
 
-  // Server-side shipping calculation using haversine (approximate, doesn't need API)
-  let shippingCost = 0;
-  let shippingDistanceKm = 0;
+  // Validate and apply discount
+  let appliedDiscountCode = null;
+  let appliedDiscountPercent = 0;
+  let discountAmount = 0;
+  if (discount_code && discount_code.trim()) {
+    const codeRow = getSetting.get('discount_code');
+    const percentRow = getSetting.get('discount_percent');
+    const configuredCode = codeRow ? codeRow.value.trim() : '';
+    const configuredPercent = percentRow ? parseFloat(percentRow.value) : 0;
+    if (configuredCode && configuredPercent > 0 && discount_code.trim().toUpperCase() === configuredCode.toUpperCase()) {
+      appliedDiscountCode = configuredCode.toUpperCase();
+      appliedDiscountPercent = configuredPercent;
+      discountAmount = Math.round(subtotal * configuredPercent / 100);
+    }
+  }
+
+  const total = subtotal - discountAmount;
+
   const lat = parseFloat(customer_lat);
   const lng = parseFloat(customer_lng);
-
-  if (lat && lng) {
-    shippingDistanceKm = Math.round(haversineKm(ORIGIN_LAT, ORIGIN_LNG, lat, lng) * 1.3); // ~30% road factor
-    const rateRow = getSetting.get('shipping_rate_per_km');
-    const rate = rateRow ? parseFloat(rateRow.value) : 250;
-    shippingCost = Math.round(shippingDistanceKm * rate);
-  }
-
-  // Free shipping above threshold
-  const thresholdRow = getSetting.get('free_shipping_threshold');
-  const freeThreshold = thresholdRow ? parseFloat(thresholdRow.value) : 150000;
-  if (freeThreshold > 0 && productsTotal >= freeThreshold) {
-    shippingCost = 0;
-  }
-
-  const total = productsTotal + shippingCost;
 
   const result = createOrder.run({
     customer_name,
@@ -196,8 +190,10 @@ router.post('/order', async (req, res) => {
     delivery_date: delivery_date || null,
     items_json: JSON.stringify(items),
     total_amount: total,
-    shipping_cost: shippingCost,
-    shipping_distance_km: shippingDistanceKm,
+    subtotal_amount: subtotal,
+    discount_code: appliedDiscountCode,
+    discount_percent: appliedDiscountPercent,
+    discount_amount: discountAmount,
     customer_lat: lat || null,
     customer_lng: lng || null
   });

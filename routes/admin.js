@@ -77,10 +77,17 @@ router.get('/settings', requireAdmin, (req, res) => {
 });
 
 router.post('/settings', requireAdmin, (req, res) => {
-  const fields = ['price_nalga', 'price_pollo', 'price_bife_chorizo', 'price_peceto', 'shipping_rate_per_km', 'free_shipping_threshold', 'transfer_alias', 'payment_whatsapp'];
+  const fields = [
+    'price_nalga', 'price_pollo', 'price_bife_chorizo', 'price_peceto',
+    'compare_price_nalga', 'compare_price_pollo', 'compare_price_bife_chorizo', 'compare_price_peceto',
+    'discount_code', 'discount_percent',
+    'transfer_alias', 'payment_whatsapp'
+  ];
   for (const key of fields) {
     if (req.body[key] !== undefined) {
-      setSetting.run(key, req.body[key]);
+      let value = req.body[key];
+      if (key === 'discount_code') value = String(value).trim().toUpperCase();
+      setSetting.run(key, value);
     }
   }
   // Checkboxes: if unchecked, they're not sent in the form body

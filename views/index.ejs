@@ -51,16 +51,25 @@
 
   <!-- Products -->
   <h2 class="section-title">Nuestras milanesas</h2>
-  <p class="section-subtitle">Pedido mínimo: 2 kg (combinando variedades)</p>
+  <div class="zona-badge-wrap">
+    <span class="zona-badge">📍 Entregamos por Zona Norte (GBA)</span>
+  </div>
 
-  <form id="order-form" action="/order" method="POST" data-free-shipping-threshold="<%= freeShippingThreshold %>" data-phone-verification="<%= phoneVerificationEnabled ? '1' : '0' %>">
+  <form id="order-form" action="/order" method="POST" data-phone-verification="<%= phoneVerificationEnabled ? '1' : '0' %>">
     <div class="products">
       <% products.forEach((p, i) => { %>
+        <% const hasCompare = p.comparePricePerKg && p.comparePricePerKg > p.pricePerKg; %>
         <div class="product-card" data-price-per-kg="<%= p.pricePerKg %>" data-min-kg="<%= p.minKg %>">
           <img src="<%= p.image %>" alt="<%= p.title %>">
+          <% if (hasCompare) { %>
+            <span class="discount-badge">-<%= Math.round((1 - p.pricePerKg / p.comparePricePerKg) * 100) %>%</span>
+          <% } %>
           <div class="product-info">
             <h3><%= p.title %></h3>
             <p class="weight">Precio por kilo</p>
+            <% if (hasCompare) { %>
+              <p class="price-compare"><%= formatPrice(p.comparePricePerKg) %></p>
+            <% } %>
             <p class="price"><%= formatPrice(p.pricePerKg) %> <span>/ kg</span></p>
             <div class="qty-selector">
               <button type="button" class="qty-btn" data-action="minus">&#8722;</button>
@@ -111,11 +120,11 @@
       </div>
       <div class="form-group">
         <label for="address">Dirección de entrega *</label>
-        <input type="text" id="address" name="customer_address" required placeholder="Calle y número, localidad" autocomplete="off">
+        <input type="text" id="address" name="customer_address" required placeholder="Calle y número, localidad (Zona Norte)" autocomplete="off">
         <input type="hidden" id="customer_lat" name="customer_lat" value="">
         <input type="hidden" id="customer_lng" name="customer_lng" value="">
         <div id="address-map" style="display: none; height: 200px; border-radius: 6px; margin-top: 0.5rem;"></div>
-        <div id="shipping-info" style="display: none; margin-top: 0.5rem;"></div>
+        <small style="color: var(--gray);">Solo entregamos en Zona Norte de GBA.</small>
       </div>
       <div class="form-group">
         <label for="address_extra">Piso / Depto / Timbre <small style="color: var(--gray);">(importante en edificios)</small></label>
@@ -137,9 +146,28 @@
         </div>
       </div>
 
-      <p style="text-align: right; font-size: 1.4rem; font-weight: 600; margin-top: 1.5rem;">
-        Total: <span id="order-total">$0</span>
-      </p>
+      <div class="order-subsection" style="margin-top: 1.5rem;">
+        <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem;">¿Tenés un código de descuento?</h3>
+        <div class="form-group" style="margin-bottom: 0.5rem;">
+          <div style="display: flex; gap: 0.5rem;">
+            <input type="text" id="discount_code" name="discount_code" placeholder="Ingresá tu código" style="text-transform: uppercase; flex: 1;">
+            <button type="button" id="btn-apply-discount" class="btn btn-secondary btn-small">Aplicar</button>
+          </div>
+          <small id="discount-msg" style="display: none; margin-top: 0.25rem;"></small>
+        </div>
+      </div>
+
+      <div class="order-totals" style="margin-top: 1.5rem; text-align: right;">
+        <p id="subtotal-row" style="display: none; color: var(--gray); margin-bottom: 0.25rem;">
+          Subtotal: <span id="order-subtotal">$0</span>
+        </p>
+        <p id="discount-row" style="display: none; color: var(--green); margin-bottom: 0.25rem;">
+          Descuento (<span id="discount-label"></span>): <span id="order-discount">-$0</span>
+        </p>
+        <p style="font-size: 1.4rem; font-weight: 600;">
+          Total: <span id="order-total">$0</span>
+        </p>
+      </div>
 
       <button type="submit" id="submit-order" class="btn btn-primary" disabled>Hacer pedido</button>
       <small id="submit-hint" style="display: block; text-align: center; color: #c62828; margin-top: 0.5rem;"></small>

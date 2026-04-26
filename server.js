@@ -26,7 +26,8 @@ const PRODUCTS = [
     pricePerKg: 28000,
     minKg: 2,
     image: '/images/nalga.jpeg',
-    settingsKey: 'price_nalga'
+    settingsKey: 'price_nalga',
+    compareKey: 'compare_price_nalga'
   },
   {
     id: 'pollo',
@@ -35,7 +36,8 @@ const PRODUCTS = [
     pricePerKg: 28000,
     minKg: 2,
     image: '/images/pollo.jpeg',
-    settingsKey: 'price_pollo'
+    settingsKey: 'price_pollo',
+    compareKey: 'compare_price_pollo'
   },
   {
     id: 'bife-chorizo',
@@ -44,7 +46,8 @@ const PRODUCTS = [
     pricePerKg: 28000,
     minKg: 2,
     image: '/images/bife-chorizo.jpeg',
-    settingsKey: 'price_bife_chorizo'
+    settingsKey: 'price_bife_chorizo',
+    compareKey: 'compare_price_bife_chorizo'
   },
   {
     id: 'peceto',
@@ -53,7 +56,8 @@ const PRODUCTS = [
     pricePerKg: 28000,
     minKg: 2,
     image: '/images/peceto.jpeg',
-    settingsKey: 'price_peceto'
+    settingsKey: 'price_peceto',
+    compareKey: 'compare_price_peceto'
   }
 ];
 
@@ -78,19 +82,26 @@ app.use(session({
 app.use((req, res, next) => {
   res.locals.session = req.session;
 
-  // Load product prices from DB settings
+  // Load product prices and compare prices from DB settings
   const products = PRODUCTS.map(p => {
     const dbPrice = getSetting.get(p.settingsKey);
-    return { ...p, pricePerKg: dbPrice ? parseFloat(dbPrice.value) : p.pricePerKg };
+    const dbCompare = getSetting.get(p.compareKey);
+    const comparePrice = dbCompare ? parseFloat(dbCompare.value) : 0;
+    return {
+      ...p,
+      pricePerKg: dbPrice ? parseFloat(dbPrice.value) : p.pricePerKg,
+      comparePricePerKg: comparePrice > 0 ? comparePrice : 0
+    };
   });
   res.locals.products = products;
   req.products = products;
 
-  // Shipping rate, free threshold & Google Maps key
-  const shippingRow = getSetting.get('shipping_rate_per_km');
-  res.locals.shippingRate = shippingRow ? parseFloat(shippingRow.value) : 250;
-  const thresholdRow = getSetting.get('free_shipping_threshold');
-  res.locals.freeShippingThreshold = thresholdRow ? parseFloat(thresholdRow.value) : 150000;
+  // Discount config
+  const discountCodeRow = getSetting.get('discount_code');
+  const discountPercentRow = getSetting.get('discount_percent');
+  res.locals.discountCode = discountCodeRow ? discountCodeRow.value : '';
+  res.locals.discountPercent = discountPercentRow ? parseFloat(discountPercentRow.value) : 0;
+
   res.locals.googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY || '';
 
   const waVerification = getSetting.get('whatsapp_verification_enabled');

@@ -219,6 +219,47 @@ footer p { font-size: 0.9rem; }
   overflow: hidden;
   transition: box-shadow 0.3s, transform 0.3s;
   border: 1px solid var(--gray-border);
+  position: relative;
+}
+
+.discount-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: var(--red);
+  color: var(--white);
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  z-index: 1;
+}
+
+.price-compare {
+  text-decoration: line-through;
+  color: var(--gray-light);
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 0.1rem;
+  line-height: 1;
+}
+
+.zona-badge-wrap {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.zona-badge {
+  display: inline-block;
+  background: var(--cream);
+  color: var(--black);
+  border: 1px solid var(--gray-border);
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 500;
 }
 
 .product-card:hover {
@@ -707,21 +748,6 @@ footer p { font-size: 0.9rem; }
 
 .delivery-option input:checked + label .slot-time {
   color: rgba(255,255,255,0.7);
-}
-
-#shipping-info {
-  background: var(--cream);
-  padding: 0.75rem 1rem;
-  border-radius: 6px;
-  font-weight: 500;
-}
-#shipping-info .shipping-cost {
-  font-size: 1.1rem;
-  color: var(--black);
-}
-#shipping-info .shipping-distance {
-  font-size: 0.85rem;
-  color: var(--gray);
 }
 
 .success-msg {

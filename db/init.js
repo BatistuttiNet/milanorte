@@ -42,8 +42,12 @@ db.exec(`
   INSERT OR IGNORE INTO settings (key, value) VALUES ('price_pollo', '28000');
   INSERT OR IGNORE INTO settings (key, value) VALUES ('price_bife_chorizo', '28000');
   INSERT OR IGNORE INTO settings (key, value) VALUES ('price_peceto', '28000');
-  INSERT OR IGNORE INTO settings (key, value) VALUES ('shipping_rate_per_km', '250');
-  INSERT OR IGNORE INTO settings (key, value) VALUES ('free_shipping_threshold', '150000');
+  INSERT OR IGNORE INTO settings (key, value) VALUES ('compare_price_nalga', '0');
+  INSERT OR IGNORE INTO settings (key, value) VALUES ('compare_price_pollo', '0');
+  INSERT OR IGNORE INTO settings (key, value) VALUES ('compare_price_bife_chorizo', '0');
+  INSERT OR IGNORE INTO settings (key, value) VALUES ('compare_price_peceto', '0');
+  INSERT OR IGNORE INTO settings (key, value) VALUES ('discount_code', '');
+  INSERT OR IGNORE INTO settings (key, value) VALUES ('discount_percent', '0');
   INSERT OR IGNORE INTO settings (key, value) VALUES ('whatsapp_verification_enabled', '0');
 
   CREATE TABLE IF NOT EXISTS phone_verifications (
@@ -67,6 +71,10 @@ const migrations = [
   'ALTER TABLE orders ADD COLUMN customer_lng REAL',
   'ALTER TABLE orders ADD COLUMN address_extra TEXT',
   'ALTER TABLE orders ADD COLUMN delivery_date TEXT',
+  'ALTER TABLE orders ADD COLUMN discount_code TEXT',
+  'ALTER TABLE orders ADD COLUMN discount_percent REAL DEFAULT 0',
+  'ALTER TABLE orders ADD COLUMN discount_amount REAL DEFAULT 0',
+  'ALTER TABLE orders ADD COLUMN subtotal_amount REAL DEFAULT 0',
 ];
 for (const sql of migrations) {
   try { db.exec(sql); } catch (e) { /* column already exists */ }
@@ -81,8 +89,8 @@ const getAllSettings = db.prepare('SELECT * FROM settings');
 
 // Helpers
 const createOrder = db.prepare(`
-  INSERT INTO orders (customer_name, customer_phone, customer_email, customer_address, address_extra, delivery_day, delivery_slot, delivery_date, items_json, total_amount, shipping_cost, shipping_distance_km, customer_lat, customer_lng)
-  VALUES (@customer_name, @customer_phone, @customer_email, @customer_address, @address_extra, @delivery_day, @delivery_slot, @delivery_date, @items_json, @total_amount, @shipping_cost, @shipping_distance_km, @customer_lat, @customer_lng)
+  INSERT INTO orders (customer_name, customer_phone, customer_email, customer_address, address_extra, delivery_day, delivery_slot, delivery_date, items_json, total_amount, subtotal_amount, discount_code, discount_percent, discount_amount, customer_lat, customer_lng)
+  VALUES (@customer_name, @customer_phone, @customer_email, @customer_address, @address_extra, @delivery_day, @delivery_slot, @delivery_date, @items_json, @total_amount, @subtotal_amount, @discount_code, @discount_percent, @discount_amount, @customer_lat, @customer_lng)
 `);
 
 const getOrder = db.prepare('SELECT * FROM orders WHERE id = ?');

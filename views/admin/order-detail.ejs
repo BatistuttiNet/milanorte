@@ -32,9 +32,15 @@
         <span><%= order.delivery_day === 'miercoles' ? 'Miércoles' : 'Sábado' %><% if (order.delivery_slot) { %> — <%= order.delivery_slot === 'manana' ? 'Mañana (9-12)' : order.delivery_slot === 'tarde' ? 'Tarde (13-17)' : 'Noche (18-20)' %><% } %></span>
       </div>
       <div class="detail-item">
-        <label>Envío</label>
-        <span><% if (order.shipping_cost > 0) { %><%= order.shipping_distance_km ? Math.round(order.shipping_distance_km) + ' km — ' : '' %>$<%= order.shipping_cost %><% } else { %>-<% } %></span>
+        <label>Zona</label>
+        <span>Zona Norte</span>
       </div>
+      <% if (order.discount_amount > 0) { %>
+        <div class="detail-item">
+          <label>Descuento</label>
+          <span><%= order.discount_code %> (-<%= order.discount_percent %>%) — <%= formatPrice(order.discount_amount) %></span>
+        </div>
+      <% } %>
       <div class="detail-item">
         <label>Fecha pedido</label>
         <span><%= order.created_at %></span>
@@ -59,12 +65,14 @@
             <td>$<%= item.quantity * item.unit_price %></td>
           </tr>
         <% }) %>
-        <% if (order.shipping_cost > 0) { %>
+        <% if (order.discount_amount > 0) { %>
           <tr>
-            <td>Envío (<%= order.shipping_distance_km ? Math.round(order.shipping_distance_km) + ' km' : '' %>)</td>
-            <td></td>
-            <td></td>
-            <td>$<%= order.shipping_cost %></td>
+            <td colspan="3" style="text-align: right;">Subtotal</td>
+            <td>$<%= order.subtotal_amount %></td>
+          </tr>
+          <tr style="color: var(--green);">
+            <td colspan="3" style="text-align: right;">Descuento (<%= order.discount_code %> -<%= order.discount_percent %>%)</td>
+            <td>-$<%= order.discount_amount %></td>
           </tr>
         <% } %>
         <tr class="total-row">

@@ -22,12 +22,14 @@
             <td data-label="Subtotal"><%= formatPrice(item.quantity * item.unit_price) %></td>
           </tr>
         <% }) %>
-        <% if (order.shipping_cost > 0) { %>
+        <% if (order.discount_amount > 0) { %>
           <tr>
-            <td data-label="Concepto">Envío</td>
-            <td data-label="Distancia"><%= order.shipping_distance_km ? Math.round(order.shipping_distance_km) + ' km' : '' %></td>
-            <td></td>
-            <td data-label="Costo"><%= formatPrice(order.shipping_cost) %></td>
+            <td colspan="3" data-label="Subtotal" style="text-align: right;">Subtotal</td>
+            <td data-label=""><%= formatPrice(order.subtotal_amount) %></td>
+          </tr>
+          <tr style="color: var(--green);">
+            <td colspan="3" data-label="Descuento" style="text-align: right;">Descuento (<%= order.discount_code %> -<%= order.discount_percent %>%)</td>
+            <td data-label="">-<%= formatPrice(order.discount_amount) %></td>
           </tr>
         <% } %>
         <tr class="total-row">
@@ -44,6 +46,7 @@
         <p><strong>Email:</strong> <%= order.customer_email %></p>
       <% } %>
       <p><strong>Dirección:</strong> <%= order.customer_address %><% if (order.address_extra) { %> (<%= order.address_extra %>)<% } %></p>
+      <p><strong>Zona de envío:</strong> Zona Norte</p>
       <p><strong>Entrega a domicilio:</strong> <%= order.delivery_day === 'miercoles' ? 'Miércoles' : 'Sábado' %><% if (order.delivery_date) { %> <%= new Date(order.delivery_date + 'T12:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'long' }) %><% } %><% if (order.delivery_slot) { %> — <%= order.delivery_slot === 'manana' ? 'Mañana (9 a 12hs)' : order.delivery_slot === 'tarde' ? 'Tarde (13 a 17hs)' : 'Noche (18 a 20hs)' %><% } %></p>
     </div>
 
