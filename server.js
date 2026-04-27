@@ -27,7 +27,7 @@ const PRODUCTS = [
     minKg: 2,
     image: '/images/nalga.jpeg',
     settingsKey: 'price_nalga',
-    compareKey: 'compare_price_nalga'
+    discountKey: 'discount_percent_nalga'
   },
   {
     id: 'pollo',
@@ -37,7 +37,7 @@ const PRODUCTS = [
     minKg: 2,
     image: '/images/pollo.jpeg',
     settingsKey: 'price_pollo',
-    compareKey: 'compare_price_pollo'
+    discountKey: 'discount_percent_pollo'
   },
   {
     id: 'bife-chorizo',
@@ -47,7 +47,7 @@ const PRODUCTS = [
     minKg: 2,
     image: '/images/bife-chorizo.jpeg',
     settingsKey: 'price_bife_chorizo',
-    compareKey: 'compare_price_bife_chorizo'
+    discountKey: 'discount_percent_bife_chorizo'
   },
   {
     id: 'peceto',
@@ -57,7 +57,7 @@ const PRODUCTS = [
     minKg: 2,
     image: '/images/peceto.jpeg',
     settingsKey: 'price_peceto',
-    compareKey: 'compare_price_peceto'
+    discountKey: 'discount_percent_peceto'
   }
 ];
 
@@ -82,16 +82,17 @@ app.use(session({
 app.use((req, res, next) => {
   res.locals.session = req.session;
 
-  // Load product prices and compare prices from DB settings
+  // Load product prices and per-product discount % from DB settings.
+  // The struck-through "compare" price is derived from price + discount %.
   const products = PRODUCTS.map(p => {
     const dbPrice = getSetting.get(p.settingsKey);
-    const dbCompare = getSetting.get(p.compareKey);
-    const comparePrice = dbCompare ? parseFloat(dbCompare.value) : 0;
-    return {
-      ...p,
-      pricePerKg: dbPrice ? parseFloat(dbPrice.value) : p.pricePerKg,
-      comparePricePerKg: comparePrice > 0 ? comparePrice : 0
-    };
+    const dbDiscount = getSetting.get(p.discountKey);
+    const pricePerKg = dbPrice ? parseFloat(dbPrice.value) : p.pricePerKg;
+    const discountPercent = dbDiscount ? parseFloat(dbDiscount.value) : 0;
+    const comparePricePerKg = discountPercent > 0 && discountPercent < 100
+      ? Math.round(pricePerKg / (1 - discountPercent / 100) / 100) * 100
+      : 0;
+    return { ...p, pricePerKg, discountPercent, comparePricePerKg };
   });
   res.locals.products = products;
   req.products = products;

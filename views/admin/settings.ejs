@@ -23,34 +23,34 @@
   <div class="order-section">
     <form action="/admin/settings" method="POST">
       <h3 style="margin-bottom: 1.5rem;">Precios por kilo</h3>
-      <p style="color: var(--gray); font-size: 0.9rem; margin-bottom: 1rem;">El precio "antes" se muestra tachado en la card del producto si es mayor al precio actual. Dejá en 0 para no mostrar precio tachado.</p>
+      <p style="color: var(--gray); font-size: 0.9rem; margin-bottom: 1rem;">Ingresá el precio actual y un % de descuento. El precio "antes" tachado se calcula automáticamente. Dejá el descuento en 0 para no mostrar tachado.</p>
 
       <div class="form-group">
         <label for="price_nalga">Milanesas de Nalga ($/kg)</label>
         <input type="number" id="price_nalga" name="price_nalga" value="<%= settings.price_nalga || 28000 %>" min="0" step="100" required>
-        <label for="compare_price_nalga" style="margin-top: 0.5rem;">Precio antes (tachado, $/kg)</label>
-        <input type="number" id="compare_price_nalga" name="compare_price_nalga" value="<%= settings.compare_price_nalga || 0 %>" min="0" step="100">
+        <label for="discount_percent_nalga" style="margin-top: 0.5rem;">Descuento (%)</label>
+        <input type="number" id="discount_percent_nalga" name="discount_percent_nalga" value="<%= settings.discount_percent_nalga || 0 %>" min="0" max="99" step="1">
       </div>
 
       <div class="form-group">
         <label for="price_pollo">Milanesas de Pollo ($/kg)</label>
         <input type="number" id="price_pollo" name="price_pollo" value="<%= settings.price_pollo || 28000 %>" min="0" step="100" required>
-        <label for="compare_price_pollo" style="margin-top: 0.5rem;">Precio antes (tachado, $/kg)</label>
-        <input type="number" id="compare_price_pollo" name="compare_price_pollo" value="<%= settings.compare_price_pollo || 0 %>" min="0" step="100">
+        <label for="discount_percent_pollo" style="margin-top: 0.5rem;">Descuento (%)</label>
+        <input type="number" id="discount_percent_pollo" name="discount_percent_pollo" value="<%= settings.discount_percent_pollo || 0 %>" min="0" max="99" step="1">
       </div>
 
       <div class="form-group">
         <label for="price_bife_chorizo">Milanesas de Bife de Chorizo ($/kg)</label>
         <input type="number" id="price_bife_chorizo" name="price_bife_chorizo" value="<%= settings.price_bife_chorizo || 28000 %>" min="0" step="100" required>
-        <label for="compare_price_bife_chorizo" style="margin-top: 0.5rem;">Precio antes (tachado, $/kg)</label>
-        <input type="number" id="compare_price_bife_chorizo" name="compare_price_bife_chorizo" value="<%= settings.compare_price_bife_chorizo || 0 %>" min="0" step="100">
+        <label for="discount_percent_bife_chorizo" style="margin-top: 0.5rem;">Descuento (%)</label>
+        <input type="number" id="discount_percent_bife_chorizo" name="discount_percent_bife_chorizo" value="<%= settings.discount_percent_bife_chorizo || 0 %>" min="0" max="99" step="1">
       </div>
 
       <div class="form-group">
         <label for="price_peceto">Milanesas de Peceto ($/kg)</label>
         <input type="number" id="price_peceto" name="price_peceto" value="<%= settings.price_peceto || 28000 %>" min="0" step="100" required>
-        <label for="compare_price_peceto" style="margin-top: 0.5rem;">Precio antes (tachado, $/kg)</label>
-        <input type="number" id="compare_price_peceto" name="compare_price_peceto" value="<%= settings.compare_price_peceto || 0 %>" min="0" step="100">
+        <label for="discount_percent_peceto" style="margin-top: 0.5rem;">Descuento (%)</label>
+        <input type="number" id="discount_percent_peceto" name="discount_percent_peceto" value="<%= settings.discount_percent_peceto || 0 %>" min="0" max="99" step="1">
       </div>
 
       <h3 style="margin-top: 2rem; margin-bottom: 1.5rem;">Código de descuento</h3>

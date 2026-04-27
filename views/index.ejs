@@ -59,16 +59,16 @@
   <form id="order-form" action="/order" method="POST" data-phone-verification="<%= phoneVerificationEnabled ? '1' : '0' %>">
     <div class="products">
       <% products.forEach((p, i) => { %>
-        <% const hasCompare = p.comparePricePerKg && p.comparePricePerKg > p.pricePerKg; %>
+        <% const hasDiscount = p.discountPercent > 0 && p.comparePricePerKg > p.pricePerKg; %>
         <div class="product-card" data-price-per-kg="<%= p.pricePerKg %>" data-min-kg="<%= p.minKg %>">
           <img src="<%= p.image %>" alt="<%= p.title %>">
-          <% if (hasCompare) { %>
-            <span class="discount-badge">-<%= Math.round((1 - p.pricePerKg / p.comparePricePerKg) * 100) %>%</span>
+          <% if (hasDiscount) { %>
+            <span class="discount-badge">-<%= p.discountPercent %>%</span>
           <% } %>
           <div class="product-info">
             <h3><%= p.title %></h3>
             <p class="weight">Precio por kilo</p>
-            <% if (hasCompare) { %>
+            <% if (hasDiscount) { %>
               <p class="price-compare"><%= formatPrice(p.comparePricePerKg) %></p>
             <% } %>
             <p class="price"><%= formatPrice(p.pricePerKg) %> <span>/ kg</span></p>

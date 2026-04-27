@@ -79,7 +79,7 @@ router.get('/settings', requireAdmin, (req, res) => {
 router.post('/settings', requireAdmin, (req, res) => {
   const fields = [
     'price_nalga', 'price_pollo', 'price_bife_chorizo', 'price_peceto',
-    'compare_price_nalga', 'compare_price_pollo', 'compare_price_bife_chorizo', 'compare_price_peceto',
+    'discount_percent_nalga', 'discount_percent_pollo', 'discount_percent_bife_chorizo', 'discount_percent_peceto',
     'discount_code', 'discount_percent',
     'transfer_alias', 'payment_whatsapp'
   ];

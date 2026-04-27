@@ -42,10 +42,10 @@ db.exec(`
   INSERT OR IGNORE INTO settings (key, value) VALUES ('price_pollo', '28000');
   INSERT OR IGNORE INTO settings (key, value) VALUES ('price_bife_chorizo', '28000');
   INSERT OR IGNORE INTO settings (key, value) VALUES ('price_peceto', '28000');
-  INSERT OR IGNORE INTO settings (key, value) VALUES ('compare_price_nalga', '0');
-  INSERT OR IGNORE INTO settings (key, value) VALUES ('compare_price_pollo', '0');
-  INSERT OR IGNORE INTO settings (key, value) VALUES ('compare_price_bife_chorizo', '0');
-  INSERT OR IGNORE INTO settings (key, value) VALUES ('compare_price_peceto', '0');
+  INSERT OR IGNORE INTO settings (key, value) VALUES ('discount_percent_nalga', '0');
+  INSERT OR IGNORE INTO settings (key, value) VALUES ('discount_percent_pollo', '0');
+  INSERT OR IGNORE INTO settings (key, value) VALUES ('discount_percent_bife_chorizo', '0');
+  INSERT OR IGNORE INTO settings (key, value) VALUES ('discount_percent_peceto', '0');
   INSERT OR IGNORE INTO settings (key, value) VALUES ('discount_code', '');
   INSERT OR IGNORE INTO settings (key, value) VALUES ('discount_percent', '0');
   INSERT OR IGNORE INTO settings (key, value) VALUES ('whatsapp_verification_enabled', '0');
