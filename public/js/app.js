@@ -27,6 +27,27 @@ document.addEventListener('DOMContentLoaded', () => {
     return '$' + n.toLocaleString('es-AR');
   }
 
+  // Garlic toggle (con/sin ajo) per product
+  document.querySelectorAll('.product-card').forEach(card => {
+    const toggle = card.querySelector('.garlic-toggle');
+    const checkbox = card.querySelector('.garlic-checkbox');
+    const hidden = card.querySelector('.garlic-input');
+    const label = card.querySelector('.garlic-label');
+    if (toggle && checkbox && hidden && label) {
+      const sync = () => {
+        const con = checkbox.checked;
+        hidden.value = con ? 'con' : 'sin';
+        label.textContent = con ? 'Con ajo' : 'Sin ajo';
+        toggle.classList.toggle('is-on', con);
+      };
+      checkbox.addEventListener('change', sync);
+      label.addEventListener('click', () => {
+        checkbox.checked = !checkbox.checked;
+        sync();
+      });
+    }
+  });
+
   // Update total and subtotals
   function updateTotal() {
     let subtotal = 0;
@@ -211,19 +232,20 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.qty-input').forEach(input => {
       totalKg += parseInt(input.value) || 0;
     });
-    const hasItems = totalKg > 0;
+    const hasMinKg = totalKg >= 2;
     const hasDay = !!document.querySelector('[name="delivery_day"]:checked');
     const hasSlot = !!document.querySelector('[name="delivery_slot"]:checked');
     const phoneOk = !phoneVerificationEnabled || phoneVerified;
 
     const submitBtn = document.getElementById('submit-order');
-    const canSubmit = hasItems && hasDay && hasSlot && phoneOk;
+    const canSubmit = hasMinKg && hasDay && hasSlot && phoneOk;
     if (submitBtn) submitBtn.disabled = !canSubmit;
 
     const hint = document.getElementById('submit-hint');
     if (hint) {
       const missing = [];
-      if (!hasItems) missing.push('Seleccioná al menos un producto');
+      if (totalKg === 0) missing.push('Seleccioná al menos un producto');
+      else if (!hasMinKg) missing.push('El pedido mínimo es de 2 kg en total');
       if (!hasDay) missing.push('Elegí un día de entrega');
       if (!hasSlot && hasDay) missing.push('Elegí un horario de entrega');
       if (!phoneOk) missing.push('Verificá tu teléfono por WhatsApp');
@@ -433,14 +455,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (orderForm) {
     orderForm.addEventListener('submit', (e) => {
-      let hasAny = false;
+      let totalKg = 0;
       document.querySelectorAll('.qty-input').forEach(input => {
-        if (parseInt(input.value) > 0) hasAny = true;
+        totalKg += parseInt(input.value) || 0;
       });
 
-      if (!hasAny) {
+      if (totalKg === 0) {
         e.preventDefault();
         alert('Seleccioná al menos un producto');
+        return;
+      }
+
+      if (totalKg < 2) {
+        e.preventDefault();
+        alert('El pedido mínimo es de 2 kg en total');
         return;
       }
 

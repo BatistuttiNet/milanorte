@@ -372,6 +372,67 @@ footer p { font-size: 0.9rem; }
   min-height: 1.4em;
 }
 
+/* === Garlic Toggle === */
+.garlic-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.85rem;
+}
+
+.garlic-switch-wrap {
+  position: relative;
+  display: inline-block;
+  width: 38px;
+  height: 22px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.garlic-switch-wrap input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.garlic-switch {
+  position: absolute;
+  inset: 0;
+  background-color: var(--gray-light);
+  border-radius: 999px;
+  transition: background-color 0.2s;
+}
+
+.garlic-switch::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  background: var(--white);
+  border-radius: 50%;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.garlic-toggle.is-on .garlic-switch {
+  background-color: var(--black);
+}
+
+.garlic-toggle.is-on .garlic-switch::before {
+  transform: translateX(16px);
+}
+
+.garlic-label {
+  font-size: 0.9rem;
+  color: var(--gray-dark);
+  font-weight: 500;
+  user-select: none;
+}
+
 /* === Order Form === */
 .order-section {
   background: var(--white);

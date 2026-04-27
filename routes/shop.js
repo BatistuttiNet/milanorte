@@ -127,11 +127,24 @@ router.post('/order', async (req, res) => {
   products.forEach(p => {
     const qty = parseInt(req.body[`qty_${p.id}`]) || 0;
     if (qty > 0) {
-      items.push({ product: p.title, quantity: qty, unit_price: p.pricePerKg, unit: 'kg' });
+      const garlic = req.body[`garlic_${p.id}`] === 'sin' ? 'sin' : 'con';
+      const garlicLabel = garlic === 'sin' ? 'sin ajo' : 'con ajo';
+      items.push({
+        product: `${p.title} (${garlicLabel})`,
+        quantity: qty,
+        unit_price: p.pricePerKg,
+        unit: 'kg',
+        garlic
+      });
     }
   });
 
   if (items.length === 0) {
+    return res.redirect('/');
+  }
+
+  const totalKg = items.reduce((sum, item) => sum + item.quantity, 0);
+  if (totalKg < 2) {
     return res.redirect('/');
   }
 
