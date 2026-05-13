@@ -3,20 +3,6 @@
     <p>&copy; 2026 Milanorte - Milanesas congeladas premium</p>
     <p class="footer-slogan">"¿Otra vez milanesas?"</p>
   </footer>
-  <script>
-    window._gmReady = false;
-    window._gmCallbacks = [];
-    window.onGoogleMapsReady = function() {
-      window._gmReady = true;
-      window._gmCallbacks.forEach(function(fn) { fn(); });
-    };
-    window.onGoogleMapsLoad = function(fn) {
-      if (window._gmReady) { fn(); } else { window._gmCallbacks.push(fn); }
-    };
-  </script>
-  <% if (typeof googleMapsApiKey !== 'undefined' && googleMapsApiKey) { %>
-    <script src="https://maps.googleapis.com/maps/api/js?key=<%= googleMapsApiKey %>&libraries=places&callback=onGoogleMapsReady" async></script>
-  <% } %>
   <script src="/js/app.js"></script>
 </body>
 </html>

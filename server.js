@@ -103,8 +103,6 @@ app.use((req, res, next) => {
   res.locals.discountCode = discountCodeRow ? discountCodeRow.value : '';
   res.locals.discountPercent = discountPercentRow ? parseFloat(discountPercentRow.value) : 0;
 
-  res.locals.googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY || '';
-
   const waVerification = getSetting.get('whatsapp_verification_enabled');
   res.locals.phoneVerificationEnabled = waVerification && waVerification.value === '1';
 

@@ -22,14 +22,13 @@
       <div class="detail-item" style="grid-column: 1 / -1;">
         <label>Dirección</label>
         <span><%= order.customer_address %><% if (order.address_extra) { %> (<%= order.address_extra %>)<% } %></span>
-        <% if (order.customer_lat && order.customer_lng) { %>
-          <div id="admin-map" style="height: 250px; border-radius: 6px; margin-top: 0.5rem; background: #eee;"></div>
-          <small style="color: var(--gray);">Lat: <%= order.customer_lat.toFixed(4) %>, Lng: <%= order.customer_lng.toFixed(4) %></small>
-        <% } %>
+        <div style="margin-top: 0.5rem;">
+          <a href="https://www.google.com/maps/search/?api=1&query=<%= encodeURIComponent(order.customer_address) %>" target="_blank" rel="noopener" style="color: var(--gold-dark); font-size: 0.9rem;">Ver en Google Maps &#8599;</a>
+        </div>
       </div>
       <div class="detail-item">
         <label>Día de entrega</label>
-        <span><%= order.delivery_day === 'miercoles' ? 'Miércoles' : 'Sábado' %><% if (order.delivery_slot) { %> — <%= order.delivery_slot === 'manana' ? 'Mañana (9-12)' : order.delivery_slot === 'tarde' ? 'Tarde (13-17)' : 'Noche (18-20)' %><% } %></span>
+        <span><% if (order.delivery_slot) { %><%= order.delivery_day === 'miercoles' ? 'Miércoles' : 'Sábado' %> — <%= order.delivery_slot === 'manana' ? 'Mañana (9-12)' : order.delivery_slot === 'tarde' ? 'Tarde (13-17)' : 'Noche (18-20)' %><% } else { %>A convenir<% } %></span>
       </div>
       <div class="detail-item">
         <label>Zona</label>
@@ -107,28 +106,5 @@
     </form>
   </div>
 </div>
-
-<% if (order.customer_lat && order.customer_lng) { %>
-<script>
-  function initAdminMap() {
-    var mapDiv = document.getElementById('admin-map');
-    if (!mapDiv) return;
-    var lat = <%= order.customer_lat %>;
-    var lng = <%= order.customer_lng %>;
-    var map = new google.maps.Map(mapDiv, {
-      zoom: 15,
-      center: { lat: lat, lng: lng }
-    });
-    new google.maps.Marker({ map: map, position: { lat: lat, lng: lng }, title: '<%= order.customer_address.replace(/'/g, "\\'") %>' });
-  }
-  // Try immediately, or wait for Google Maps to load
-  if (typeof google !== 'undefined' && google.maps && google.maps.Map) {
-    document.addEventListener('DOMContentLoaded', initAdminMap);
-  } else {
-    window._gmCallbacks = window._gmCallbacks || [];
-    window._gmCallbacks.push(initAdminMap);
-  }
-</script>
-<% } %>
 
 <%- include('../partials/footer') %>

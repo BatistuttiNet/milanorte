@@ -10,8 +10,6 @@
       <a href="/admin?status=preparing" class="<%= currentFilter === 'preparing' ? 'active' : '' %>">Preparando</a>
       <a href="/admin?status=ready" class="<%= currentFilter === 'ready' ? 'active' : '' %>">Listos</a>
       <a href="/admin?status=delivered" class="<%= currentFilter === 'delivered' ? 'active' : '' %>">Entregados</a>
-      <a href="/admin?delivery=miercoles" class="<%= currentFilter === 'miercoles' ? 'active' : '' %>">Mie</a>
-      <a href="/admin?delivery=sabado" class="<%= currentFilter === 'sabado' ? 'active' : '' %>">Sab</a>
       <a href="/admin/settings" style="margin-left: 1rem; font-weight: 600;">⚙ Config</a>
     </div>
     <a href="/admin/logout" class="btn btn-small btn-secondary">Salir</a>
@@ -45,7 +43,7 @@
             <td><%= o.customer_phone %></td>
             <td><%= summary %></td>
             <td>$<%= o.total_amount %></td>
-            <td><%= o.delivery_day === 'miercoles' ? 'Mie' : 'Sab' %></td>
+            <td><%= o.delivery_slot ? (o.delivery_day === 'miercoles' ? 'Mie' : 'Sab') : 'A conv.' %></td>
             <td><span class="status-badge status-<%= o.status %>"><%= o.status %></span></td>
             <td><%= o.mp_payment_id ? o.mp_payment_id : '-' %></td>
             <td><%= o.created_at %></td>

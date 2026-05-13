@@ -89,8 +89,7 @@ router.get('/success', (req, res) => {
   }
 
   res.render('success', {
-    orderId: orderId || '?',
-    deliveryDay: order ? order.delivery_day : 'miercoles'
+    orderId: orderId || '?'
   });
 });
 

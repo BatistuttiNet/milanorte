@@ -89,8 +89,8 @@ const getAllSettings = db.prepare('SELECT * FROM settings');
 
 // Helpers
 const createOrder = db.prepare(`
-  INSERT INTO orders (customer_name, customer_phone, customer_email, customer_address, address_extra, delivery_day, delivery_slot, delivery_date, items_json, total_amount, subtotal_amount, discount_code, discount_percent, discount_amount, customer_lat, customer_lng)
-  VALUES (@customer_name, @customer_phone, @customer_email, @customer_address, @address_extra, @delivery_day, @delivery_slot, @delivery_date, @items_json, @total_amount, @subtotal_amount, @discount_code, @discount_percent, @discount_amount, @customer_lat, @customer_lng)
+  INSERT INTO orders (customer_name, customer_phone, customer_email, customer_address, address_extra, delivery_day, delivery_slot, delivery_date, items_json, total_amount, subtotal_amount, discount_code, discount_percent, discount_amount)
+  VALUES (@customer_name, @customer_phone, @customer_email, @customer_address, @address_extra, @delivery_day, @delivery_slot, @delivery_date, @items_json, @total_amount, @subtotal_amount, @discount_code, @discount_percent, @discount_amount)
 `);
 
 const getOrder = db.prepare('SELECT * FROM orders WHERE id = ?');

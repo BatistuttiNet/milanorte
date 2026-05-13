@@ -119,7 +119,7 @@ router.post('/verify-code', (req, res) => {
 });
 
 router.post('/order', async (req, res) => {
-  const { delivery_day, delivery_slot, delivery_date, customer_name, customer_phone, customer_email, customer_address, address_extra, customer_lat, customer_lng, discount_code } = req.body;
+  const { customer_name, customer_phone, customer_email, customer_address, address_extra, discount_code } = req.body;
   const products = res.locals.products;
 
   // Build items dynamically from all products
@@ -148,7 +148,7 @@ router.post('/order', async (req, res) => {
     return res.redirect('/');
   }
 
-  if (!delivery_day || !delivery_slot || !customer_name || !customer_phone || !customer_email || !customer_address) {
+  if (!customer_name || !customer_phone || !customer_email || !customer_address) {
     return res.redirect('/');
   }
 
@@ -189,26 +189,21 @@ router.post('/order', async (req, res) => {
 
   const total = subtotal - discountAmount;
 
-  const lat = parseFloat(customer_lat);
-  const lng = parseFloat(customer_lng);
-
   const result = createOrder.run({
     customer_name,
     customer_phone: phoneDigits,
     customer_email: customer_email || null,
     customer_address,
     address_extra: address_extra || null,
-    delivery_day,
-    delivery_slot,
-    delivery_date: delivery_date || null,
+    delivery_day: 'sabado', // placeholder; new orders use "a convenir" (delivery_slot=null)
+    delivery_slot: null,
+    delivery_date: null,
     items_json: JSON.stringify(items),
     total_amount: total,
     subtotal_amount: subtotal,
     discount_code: appliedDiscountCode,
     discount_percent: appliedDiscountPercent,
-    discount_amount: discountAmount,
-    customer_lat: lat || null,
-    customer_lng: lng || null
+    discount_amount: discountAmount
   });
 
   const order = getOrder.get(result.lastInsertRowid);

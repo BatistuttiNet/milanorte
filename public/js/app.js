@@ -146,86 +146,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Time slots per delivery day
-  const slotsByDay = {
-    miercoles: [
-      { value: 'tarde', label: 'Tarde', time: '13 a 17hs' },
-      { value: 'noche', label: 'Noche', time: '18 a 20hs' }
-    ],
-    sabado: [
-      { value: 'manana', label: 'Mañana', time: '9 a 12hs' },
-      { value: 'tarde', label: 'Tarde', time: '13 a 17hs' }
-    ]
-  };
-
-  // Calculate next 2 available delivery dates (Wed=3, Sat=6) with 24h cutoff
-  function getNextDeliveryDates() {
-    const now = new Date();
-    const deliveryDays = [3, 6]; // Wednesday, Saturday
-    const dates = [];
-    const dayNames = { 3: 'miercoles', 6: 'sabado' };
-    const dayLabels = { 3: 'Miércoles', 6: 'Sábado' };
-    const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-
-    for (let i = 1; i <= 14 && dates.length < 2; i++) {
-      const candidate = new Date(now);
-      candidate.setDate(now.getDate() + i);
-      const dow = candidate.getDay();
-      if (!deliveryDays.includes(dow)) continue;
-
-      // 24h cutoff: must be at least 24h from now
-      const diffMs = candidate.setHours(0,0,0,0) - now.getTime();
-      if (diffMs < 24 * 60 * 60 * 1000) continue;
-
-      dates.push({
-        value: dayNames[dow],
-        label: dayLabels[dow],
-        dateStr: candidate.getDate() + '/' + (candidate.getMonth() + 1),
-        dateLong: candidate.getDate() + ' de ' + months[candidate.getMonth()],
-        dateISO: candidate.toISOString().slice(0, 10)
-      });
-    }
-    return dates;
-  }
-
-  // Populate delivery day options with real dates
-  const deliveryDayContainer = document.getElementById('delivery-day-options');
-  const timeSlotsDiv = document.getElementById('time-slots');
-  const timeSlotsOptions = document.getElementById('time-slots-options');
-
-  function renderDeliveryDays() {
-    const dates = getNextDeliveryDates();
-    if (!deliveryDayContainer) return;
-    deliveryDayContainer.innerHTML = dates.map((d, i) => `
-      <div class="delivery-option">
-        <input type="radio" id="del-${i}" name="delivery_day" value="${d.value}" data-date="${d.dateISO}">
-        <label for="del-${i}">${d.label}<span class="delivery-date">${d.dateLong}</span></label>
-      </div>
-    `).join('');
-
-    // Bind change events
-    deliveryDayContainer.querySelectorAll('[name="delivery_day"]').forEach(radio => {
-      radio.addEventListener('change', () => {
-        // Set hidden delivery_date field
-        const dateInput = document.getElementById('delivery_date');
-        if (dateInput) dateInput.value = radio.dataset.date;
-        const slots = slotsByDay[radio.value] || [];
-        timeSlotsOptions.innerHTML = slots.map(s => `
-          <div class="delivery-option">
-            <input type="radio" id="slot-${s.value}" name="delivery_slot" value="${s.value}">
-            <label for="slot-${s.value}">${s.label}<span class="slot-time">${s.time}</span></label>
-          </div>
-        `).join('');
-        timeSlotsOptions.querySelectorAll('[name="delivery_slot"]').forEach(r => {
-          r.addEventListener('change', validateForm);
-        });
-        if (timeSlotsDiv) timeSlotsDiv.style.display = 'block';
-        validateForm();
-      });
-    });
-  }
-  renderDeliveryDays();
-
   // Form validation
   function validateForm() {
     let totalKg = 0;
@@ -233,12 +153,10 @@ document.addEventListener('DOMContentLoaded', () => {
       totalKg += parseInt(input.value) || 0;
     });
     const hasMinKg = totalKg >= 2;
-    const hasDay = !!document.querySelector('[name="delivery_day"]:checked');
-    const hasSlot = !!document.querySelector('[name="delivery_slot"]:checked');
     const phoneOk = !phoneVerificationEnabled || phoneVerified;
 
     const submitBtn = document.getElementById('submit-order');
-    const canSubmit = hasMinKg && hasDay && hasSlot && phoneOk;
+    const canSubmit = hasMinKg && phoneOk;
     if (submitBtn) submitBtn.disabled = !canSubmit;
 
     const hint = document.getElementById('submit-hint');
@@ -246,8 +164,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const missing = [];
       if (totalKg === 0) missing.push('Seleccioná al menos un producto');
       else if (!hasMinKg) missing.push('El pedido mínimo es de 2 kg en total');
-      if (!hasDay) missing.push('Elegí un día de entrega');
-      if (!hasSlot && hasDay) missing.push('Elegí un horario de entrega');
       if (!phoneOk) missing.push('Verificá tu teléfono por WhatsApp');
       hint.textContent = canSubmit ? '' : missing[0] || '';
     }
@@ -472,20 +388,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      const delivery = document.querySelector('[name="delivery_day"]:checked');
-      if (!delivery) {
-        e.preventDefault();
-        alert('Seleccioná un día de entrega');
-        return;
-      }
-
-      const slot = document.querySelector('[name="delivery_slot"]:checked');
-      if (!slot) {
-        e.preventDefault();
-        alert('Seleccioná un horario de entrega');
-        return;
-      }
-
       const phoneVal = document.getElementById('phone');
       if (phoneVal) {
         const phoneDigits = normalizePhone(phoneVal.value);
@@ -505,55 +407,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (phoneVal) phoneVal.focus();
         return;
       }
-
-      const lat = document.getElementById('customer_lat')?.value;
-      if (!lat) {
-        e.preventDefault();
-        alert('Seleccioná tu dirección de la lista de sugerencias');
-        return;
-      }
     });
   }
-
-  // Google Maps Autocomplete (for address validation, not shipping)
-  function initPlacesAutocomplete() {
-    const addressInput = document.getElementById('address');
-    if (!addressInput) return;
-
-    const autocomplete = new google.maps.places.Autocomplete(addressInput, {
-      componentRestrictions: { country: 'ar' },
-      fields: ['formatted_address', 'geometry'],
-      types: ['address']
-    });
-
-    let map = null;
-    let marker = null;
-
-    autocomplete.addListener('place_changed', () => {
-      const place = autocomplete.getPlace();
-      if (!place.geometry) return;
-
-      const lat = place.geometry.location.lat();
-      const lng = place.geometry.location.lng();
-
-      document.getElementById('customer_lat').value = lat;
-      document.getElementById('customer_lng').value = lng;
-
-      const mapDiv = document.getElementById('address-map');
-      mapDiv.style.display = 'block';
-
-      if (!map) {
-        map = new google.maps.Map(mapDiv, { zoom: 15, center: { lat, lng } });
-        marker = new google.maps.Marker({ map, position: { lat, lng } });
-      } else {
-        map.setCenter({ lat, lng });
-        marker.setPosition({ lat, lng });
-      }
-
-      // Delivery section is always visible now (no need to show/hide)
-    });
-  }
-  if (window.onGoogleMapsLoad) window.onGoogleMapsLoad(initPlacesAutocomplete);
 
   updateTotal();
 });

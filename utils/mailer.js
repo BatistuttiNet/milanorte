@@ -45,7 +45,10 @@ function buildItemsHTML(items) {
 }
 
 function buildOrderHTML(order, items) {
-  const deliveryDay = order.delivery_day === 'miercoles' ? 'Miércoles' : 'Sábado';
+  const slotLabel = order.delivery_slot === 'manana' ? 'Mañana (9 a 12hs)' : order.delivery_slot === 'tarde' ? 'Tarde (13 a 17hs)' : 'Noche (18 a 20hs)';
+  const deliveryText = order.delivery_slot
+    ? `${order.delivery_day === 'miercoles' ? 'Miércoles' : 'Sábado'} - ${slotLabel}`
+    : 'A convenir (coordinamos por WhatsApp)';
   const hasDiscount = order.discount_amount && order.discount_amount > 0;
   return `
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
@@ -77,7 +80,7 @@ function buildOrderHTML(order, items) {
         ${order.customer_email ? `<p><strong>Email:</strong> ${order.customer_email}</p>` : ''}
         <p><strong>Dirección:</strong> ${order.customer_address}${order.address_extra ? ' (' + order.address_extra + ')' : ''}</p>
         <p><strong>Zona de envío:</strong> Zona Norte</p>
-        <p><strong>Entrega:</strong> ${deliveryDay}${order.delivery_slot ? ' - ' + (order.delivery_slot === 'manana' ? 'Mañana (9 a 12hs)' : order.delivery_slot === 'tarde' ? 'Tarde (13 a 17hs)' : 'Noche (18 a 20hs)') : ''}</p>
+        <p><strong>Entrega:</strong> ${deliveryText}</p>
       </div>
     </div>
   `;
